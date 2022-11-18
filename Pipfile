@@ -24,7 +24,7 @@ websockets = "==10.4"
 [dev-packages]
 
 [scripts]
-reqs = "pipenv lock"
+reqs = "./scripts/lock-requirements.sh"
 start = "uvicorn app.main:app --reload"
 
 [requires]
