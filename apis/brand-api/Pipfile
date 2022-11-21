@@ -24,8 +24,10 @@ websockets = "==10.4"
 [dev-packages]
 
 [scripts]
-reqs = "./scripts/lock-requirements.sh"
-start = "uvicorn app.main:app --reload"
+reqs = "../../common/scripts/lock-requirements.sh"
+start = "../../common/scripts/docker-up.sh"
+build = "../../common/scripts/docker-build.sh"
+
 
 [requires]
 python_version = "3.11"
