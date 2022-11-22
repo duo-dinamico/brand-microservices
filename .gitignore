@@ -130,3 +130,6 @@ dmypy.json
 
 # Docker PSQL
 psql_db/
+
+# VS code settings
+.vscode
