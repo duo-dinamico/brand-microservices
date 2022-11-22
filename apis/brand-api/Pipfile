@@ -23,6 +23,7 @@ websockets = "==10.4"
 flake8 = "*"
 pyflakes = "*"
 pre-commit = "*"
+sqlalchemy = "*"
 
 [dev-packages]
 
