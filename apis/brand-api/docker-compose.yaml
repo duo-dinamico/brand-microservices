@@ -10,7 +10,7 @@ services:
     depends_on:
       - postgres
   postgres:
-    image: postgres:13.5
+    image: postgres:13
     ports:
       - "5432:5432"
     volumes:
