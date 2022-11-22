@@ -20,6 +20,9 @@ uvicorn = "==0.19.0"
 uvloop = "==0.17.0"
 watchfiles = "==0.18.0"
 websockets = "==10.4"
+flake8 = "*"
+pyflakes = "*"
+pre-commit = "*"
 
 [dev-packages]
 
@@ -27,7 +30,6 @@ websockets = "==10.4"
 reqs = "../../common/scripts/lock-requirements.sh"
 start = "../../common/scripts/docker-up.sh"
 build = "../../common/scripts/docker-build.sh"
-
 
 [requires]
 python_version = "3.11"
