@@ -1,4 +1,4 @@
 #!/bin/sh
 
-./scripts/lock-requirements.sh
+../../common/scripts/lock-requirements.sh
 docker compose build
