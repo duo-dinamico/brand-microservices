@@ -24,6 +24,7 @@ flake8 = "*"
 pyflakes = "*"
 pre-commit = "*"
 sqlalchemy = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 
