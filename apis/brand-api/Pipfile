@@ -25,6 +25,9 @@ pyflakes = "*"
 pre-commit = "*"
 sqlalchemy = "*"
 psycopg2-binary = "*"
+httpx = "*"
+pytest = "*"
+requests = "*"
 
 [dev-packages]
 
