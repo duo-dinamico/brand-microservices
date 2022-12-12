@@ -1,0 +1,26 @@
+version: "3.7"
+
+services:
+  brand-microservices:
+    depends_on:
+      - brand_db
+    ports:
+      - "8000:8000"
+    build:
+      dockerfile: ./apis/brand_api/Dockerfile
+      context: .
+    volumes:
+      - ./apis/brand_api:/home/user/apis/brand_api
+      - ./common:/home/user/common
+
+  brand_db:
+    image: postgres:13
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./psql_db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=postgres
+
+volumes:
+  psql_db:
