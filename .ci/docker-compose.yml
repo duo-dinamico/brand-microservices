@@ -1,0 +1,30 @@
+version: "3.7"
+
+services:
+  unit:
+    build:
+      context: ..
+      dockerfile: apis/brand_api/Dockerfile
+      target: test
+    volumes:
+      - ../apis/brand_api:/home/user/apis/brand_api
+
+  integration:
+    depends_on:
+      - brand_db
+    build:
+      context: ..
+      dockerfile: apis/brand_api/Dockerfile
+      target: test
+    volumes:
+      - ../apis/brand_api:/home/user/apis/brand_api
+
+  brand_db:
+    image: postgres:13
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "brand_db"]
+      interval: 10s
+      timeout: 60s
+      retries: 3
