@@ -1,7 +1,7 @@
 version: "3.7"
 
 services:
-  brand-microservices:
+  brand_api:
     depends_on:
       - brand_db
     ports:
@@ -21,6 +21,11 @@ services:
       - ./psql_db:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD=postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "brand_db"]
+      interval: 10s
+      timeout: 60s
+      retries: 3
 
 volumes:
   psql_db:

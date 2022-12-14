@@ -1,10 +1,12 @@
+from typing import List
+
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 
-from apis.brand_api.core.models import main_models
-from apis.brand_api.core.schemas import schemas
-from apis.brand_api.core.models.database import SessionLocal, engine
-from apis.brand_api.v1.endpoints import crud
+from .core.models import main_models
+from .core.models.database import SessionLocal, engine
+from .core.schemas import schemas
+from .v1.endpoints import crud
 
 main_models.Base.metadata.create_all(bind=engine)
 
@@ -28,7 +30,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     return crud.create_user(db=db, user=user)
 
 
-@app.get("/users/", response_model=list[schemas.User])
+@app.get("/users/", response_model=List[schemas.User])
 def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
@@ -43,13 +45,11 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
 
 
 @app.post("/users/{user_id}/items/", response_model=schemas.Item)
-def create_item_for_user(
-    user_id: int, item: schemas.ItemCreate, db: Session = Depends(get_db)
-):
+def create_item_for_user(user_id: int, item: schemas.ItemCreate, db: Session = Depends(get_db)):
     return crud.create_user_item(db=db, item=item, user_id=user_id)
 
 
-@app.get("/items/", response_model=list[schemas.Item])
+@app.get("/items/", response_model=List[schemas.Item])
 def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_items(db, skip=skip, limit=limit)
     return items

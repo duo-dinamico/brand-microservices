@@ -1,8 +1,9 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Enum
-from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import UUID
-import uuid
 import enum
+import uuid
+
+from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 
 from .database import Base
 
@@ -28,6 +29,7 @@ class Item(Base):
 
     owner = relationship("User", back_populates="items")
 
+
 class Brand(Base):
     __tablename__ = "brands"
 
@@ -39,12 +41,14 @@ class Brand(Base):
     average_price = Column(String)
     rating = Column(Integer)
 
+
 class MyEnum(enum.Enum):
     one = 1
     two = 2
     three = 3
     four = 4
     five = 5
+
 
 class Category(Base):
     __tablename__ = "categories"
@@ -53,5 +57,3 @@ class Category(Base):
     name = Column(String, unique=True)
     description = Column(String)
     price_per_category = Column(Enum(MyEnum))
-
-

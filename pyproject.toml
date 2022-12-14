@@ -54,6 +54,7 @@ pytest = "^7.2.0"
 black = "^22.12.0"
 isort = "^5.11.1"
 mypy = "^0.991"
+httpx = "^0.23.1" # Transient !!!!!!
 
 
 # This section describes the scripts or executables that will be installed when installing the package
@@ -62,6 +63,19 @@ mypy = "^0.991"
 
 
 # PEP-517 introduces a standard way to define alternative build systems to build a Python project.
+pre-commit = "^2.20.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line_length = 120
+
+[tool.isort]
+line_length = 120
+profile = "black"
+known_first_party = ["apis", "common"]
+
+[tool.mypy]
+plugins = "sqlalchemy.ext.mypy.plugin"
+ignore_missing_imports = true
