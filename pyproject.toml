@@ -1,12 +1,44 @@
 [tool.poetry]
+# The name of the package. Required
 name = "brand-microservices"
+
+# The version of the package. Required
 version = "0.1.0"
+
+# A short description of the package. Required
 description = ""
-authors = ["duo dinamico"]
+
+# The license of the package. Optional, but it is highly recommended to supply this.
 license = "MIT"
+
+# The authors of the package. Required
+authors = ["duo dinamico"]
+
+# The maintainers of the package. Optional
+# Maintainers may contain an email and be in the form name <email>.
+maintainers = [
+    "João Jesus <67010899+joaojesus81@users.noreply.github.com>",
+    "João Carlos Silva <16050048+jcvsilva@users.noreply.github.com>",
+]
+
+# A path, or list of paths corresponding to the README file(s) of the package. Optional
 readme = "README.md"
 
+# An URL to the website of the project. Optional
+# homepage = "https://python-poetry.org/"
+
+# An URL to the repository of the project. Optional
+repository = "https://github.com/duo-dinamico/brand-microservices"
+
+# An URL to the documentation of the project. Optional
+# documentation = "https://python-poetry.org/docs/"
+
+
+# Poetry is configured to look for dependencies on PyPI by default.
+# Only the name and a version string are required in this case.
 [tool.poetry.dependencies]
+
+# Be aware that declaring the python version for which your package is compatible is mandatory:
 python = "^3.11"
 fastapi = "^0.88.0"
 uvicorn = "^0.20.0"
@@ -15,12 +47,21 @@ alembic = "^1.8.1"
 psycopg2-binary = "^2.9.5"
 requests = "^2.28.1"
 
+
+# You can organize your dependencies in groups to manage them in a more granular way.
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2.0"
 black = "^22.12.0"
 isort = "^5.11.1"
 mypy = "^0.991"
 
+
+# This section describes the scripts or executables that will be installed when installing the package
+# [tool.poetry.scripts]
+# my_package_cli = 'my_package.console:run'
+
+
+# PEP-517 introduces a standard way to define alternative build systems to build a Python project.
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
