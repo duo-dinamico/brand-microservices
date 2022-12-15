@@ -3,7 +3,8 @@ version: "3.7"
 services:
   brand_api:
     depends_on:
-      - brand_db
+      brand_db:
+        condition: service_healthy
     ports:
       - "8000:8000"
     build:
@@ -20,11 +21,13 @@ services:
     volumes:
       - ./psql_db:/var/lib/postgresql/data
     environment:
+      - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=brand_db
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready", "-d", "brand_db"]
-      interval: 10s
-      timeout: 60s
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
       retries: 3
 
 volumes:
