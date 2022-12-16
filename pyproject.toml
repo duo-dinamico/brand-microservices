@@ -52,7 +52,6 @@ isort = "^5.11.1"
 mypy = "^0.991"
 pre-commit = "^2.20.0"
 httpx = "^0.23.1" # Transient !!!!!!
-pre-commit = "^2.20.0"
 pytest-watch = "^4.2.0"
 
 
