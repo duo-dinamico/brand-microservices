@@ -36,8 +36,8 @@ itest: ## Run integration tests
 	$(ci-docker-compose) run --rm integration pytest-watch ./apis/brand_api/tests
 
 check: ## Check the code base
-	poetry run black ./$(PROJECT) --check --diff
-	poetry run unit isort ./$(PROJECT) --check --diff
+	poetry run black ./$(PROJECT) --check --diff --color
+	poetry run isort ./$(PROJECT) --check --diff
 	poetry run mypy ./$(PROJECT)
 
 lint: ## Check the code base, and fix it

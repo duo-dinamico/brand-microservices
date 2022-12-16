@@ -16,7 +16,7 @@ authors = ["duo dinamico"]
 
 # The maintainers of the package. Optional
 # Maintainers may contain an email and be in the form name <email>.
-maintainers = ["João Jesus <67010899+joaojesus81@users.noreply.github.com>","João Carlos Silva <16050048+jcvsilva@users.noreply.github.com>"]
+maintainers = ["João Jesus <67010899+joaojesus81@users.noreply.github.com>","João Carlos Silva <jcvsilva@gmail.com>"]
 
 # A path, or list of paths corresponding to the README file(s) of the package. Optional
 readme = "README.md"
