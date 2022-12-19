@@ -2,6 +2,7 @@ version: "3.7"
 
 services:
   brand_api:
+    container_name: brand_api
     depends_on:
       brand_db:
         condition: service_healthy
@@ -15,6 +16,7 @@ services:
       - ./common:/home/user/common
 
   brand_db:
+    container_name: brand_db
     image: postgres:13
     ports:
       - "5432:5432"

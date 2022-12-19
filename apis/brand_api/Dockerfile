@@ -4,6 +4,9 @@ ARG PROJECT=apis/brand_api
 
 WORKDIR /home/user
 
+# Confirm if pip is updated
+RUN pip3 install --upgrade pip
+
 # Install Poetry.
 RUN --mount=type=cache,target=/root/.cache pip install poetry==1.3.1
 ENV \
