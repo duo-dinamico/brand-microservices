@@ -1,7 +1,10 @@
 version: "3.7"
 
+name: brand_microservices_tests
+
 services:
   unit:
+    container_name: brand_api_unit
     build:
       context: ..
       dockerfile: apis/brand_api/Dockerfile
@@ -10,6 +13,7 @@ services:
       - ../apis/brand_api:/home/user/apis/brand_api
 
   integration:
+    container_name: brand_api_integration
     depends_on:
       brand_db:
         condition: service_healthy
@@ -21,6 +25,7 @@ services:
       - ../apis/brand_api:/home/user/apis/brand_api
 
   brand_db:
+    container_name: brand_db_tests
     image: postgres:13
     environment:
       - POSTGRES_USER=postgres
