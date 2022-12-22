@@ -1,5 +1,7 @@
 version: "3.7"
 
+name: brand_microservices
+
 services:
   brand_api:
     container_name: brand_api
