@@ -14,7 +14,7 @@ def test_error_root():
 
 
 @pytest.mark.integration
-def test_success_users():
-    response = client.get("/users")
+def test_success_brands():
+    response = client.get("/brands")
     assert response.status_code == 200
-    print(response.json)
+    assert len(response.json()) >= 0

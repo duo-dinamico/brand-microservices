@@ -11,6 +11,6 @@ repos:
     hooks:
       - id: system
         name: Code Style Checks
-        entry: make lint
+        entry: make check
         pass_filenames: false
         language: system
