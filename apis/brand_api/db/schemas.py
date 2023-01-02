@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 # class ItemBase(BaseModel):
 #     title: str
@@ -19,11 +19,7 @@ from pydantic import BaseModel
 #         orm_mode = True
 
 
-# class UserCreate(UserBase):
-#     password: str
-
-
-class Brand(BaseModel):
+class Brands(BaseModel):
     id: UUID
     name: str
     website: str
@@ -34,3 +30,20 @@ class Brand(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class UserBase(BaseModel):
+    email: str
+
+
+class UserOut(UserBase):
+    id: UUID
+
+
+class UserCreate(UserBase):
+    password: str
+
+
+class UserAuth(BaseModel):
+    email: str = Field(..., description="user email")
+    password: str = Field(..., min_length=5, max_length=24, description="user password")

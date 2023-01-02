@@ -1,11 +1,12 @@
 from typing import List
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, status
 from sqlalchemy.orm import Session
 
 from . import crud
 from .db import models, schemas
 from .db.database import SessionLocal, engine
+from .utils.password_hash import get_hashed_password
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -29,10 +30,19 @@ def get_db():
 #     return crud.create_user(db=db, user=user)
 
 
-@app.get("/brands/", response_model=List[schemas.Brand])
-def read_brands(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    brands = crud.get_brands(db, skip=skip, limit=limit)
+@app.get("/brands/", response_model=List[schemas.Brands])
+def get_all_brands(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    brands = crud.read_all_brands(db, skip=skip, limit=limit)
     return brands
+
+
+@app.post("/signup/", summary="Create new user", response_model=schemas.UserOut, status_code=201)
+def post_user(data: schemas.UserAuth, db: Session = Depends(get_db)):
+    user = crud.read_user(db=db, email=data.email)
+    if user is not None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User with this email already exist")
+    user = {"email": data.email, "password": get_hashed_password(data.password)}
+    return crud.create_user(db=db, user=user)
 
 
 # @app.get("/users/{user_id}", response_model=schemas.User)

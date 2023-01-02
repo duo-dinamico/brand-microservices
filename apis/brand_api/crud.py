@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 
-from .db import models
+from .db.models import Brands, Users
+from .db.schemas import UserCreate
 
 # def get_user(db: Session, user_id: int):
 #     return db.query(models.User).filter(models.User.id == user_id).first()
@@ -10,17 +11,20 @@ from .db import models
 #     return db.query(models.User).filter(models.User.email == email).first()
 
 
-def get_brands(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Brand).offset(skip).limit(limit).all()
+def read_all_brands(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(Brands).offset(skip).limit(limit).all()
 
 
-# def create_user(db: Session, user: schemas.UserCreate):
-#     fake_hashed_password = user.password + "notreallyhashed"
-#     db_user = models.User(email=user.email, hashed_password=fake_hashed_password)
-#     db.add(db_user)
-#     db.commit()
-#     db.refresh(db_user)
-#     return db_user
+def read_user(db: Session, email):
+    return db.query(Users).filter(Users.email == email).first()
+
+
+def create_user(db: Session, user: UserCreate):
+    db_user = Users(email=user["email"], password=user["password"])
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user.user_data()
 
 
 # def get_items(db: Session, skip: int = 0, limit: int = 100):

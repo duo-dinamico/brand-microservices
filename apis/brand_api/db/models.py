@@ -7,7 +7,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from .database import Base
 
 
-class Brand(Base):
+class Brands(Base):
     __tablename__ = "brands"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -27,10 +27,21 @@ class MyEnum(enum.Enum):
     five = 5
 
 
-class Category(Base):
+class Categories(Base):
     __tablename__ = "categories"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String, unique=True)
     description = Column(String)
     price_per_category = Column(Enum(MyEnum))
+
+
+class Users(Base):
+    __tablename__ = "users"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    email = Column(String, unique=True)
+    password = Column(String)
+
+    def user_data(self):
+        return {"id": self.id, "email": self.email, "password": self.password}

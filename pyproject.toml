@@ -42,6 +42,8 @@ SQLAlchemy = "^1.4.45"
 alembic = "^1.8.1"
 psycopg2-binary = "^2.9.5"
 requests = "^2.28.1"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 
 
 [tool.poetry.group.dev.dependencies]
@@ -62,6 +64,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 markers = ["unit: mark a test as a unit test.", "integration: mark test as an integration test."]
+addopts = "-vvvv -s"
 
 [tool.black]
 line_length = 120
