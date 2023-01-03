@@ -43,10 +43,7 @@ def test_error_auth():
 @pytest.mark.integration(raises=IntegrityError)
 def test_user_exists(db_session):
     db_session.add(Users(email="fakeemail@gmail.com", password="fakepassword"))
-    try:
-        db_session.commit()
-    except IntegrityError:
-        db_session.rollback()
+    db_session.commit()
     response = client.post("/signup/", json={"email": "fakeemail@gmail.com", "password": "fakepassword"})
     assert response.status_code == 400
     assert response.json() == "User with this email already exist"
