@@ -46,4 +46,4 @@ def test_user_exists(db_session):
     db_session.commit()
     response = client.post("/signup/", json={"email": "fakeemail@gmail.com", "password": "fakepassword"})
     assert response.status_code == 400
-    assert response.json() == "User with this email already exist"
+    assert response.json()["detail"] == "User with this email already exist"
