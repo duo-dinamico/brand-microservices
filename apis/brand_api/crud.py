@@ -20,7 +20,7 @@ def read_user(db: Session, email):
 
 
 def create_user(db: Session, user: UserCreate):
-    db_user = Users(email=user["email"], password=user["password"])
+    db_user = Users(email=user.email, password=user.password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
