@@ -15,6 +15,7 @@ def db_session():
     session = SessionLocal()
     yield session
     session.rollback()
+    Base.metadata.drop_all(engine)
     session.close()
 
 
