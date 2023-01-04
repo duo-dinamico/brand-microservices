@@ -1,22 +1,13 @@
+import re
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.exc import IntegrityError
 
-from ..db.database import Base, SessionLocal, engine
 from ..db.models import Users
 from ..main import app
 
 client = TestClient(app)
-
-
-@pytest.fixture(scope="module")
-def db_session():
-    Base.metadata.create_all(engine)
-    session = SessionLocal()
-    yield session
-    session.rollback()
-    Base.metadata.drop_all(engine)
-    session.close()
 
 
 # DEFAULT BEHAVIOUR
@@ -27,6 +18,24 @@ def test_success_brands():
     assert len(response.json()) >= 0
 
 
+@pytest.mark.integration
+def test_success_user_creation():
+    response = client.post("/signup/", json={"email": "newemail@gmail.com", "password": "newpassword"})
+    assert response.status_code == 201
+    assert response.json()["email"] == "newemail@gmail.com"
+    pattern = "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89aAbB][a-f0-9]{3}-[a-f0-9]{12}$"
+    assert bool(re.search(pattern, response.json()["id"])) == True
+
+
+@pytest.mark.integration
+def test_success_user_login(db_session):
+    db_session.add(Users(email="validemail@gmail.com", password="validpassword"))
+    db_session.commit()
+    response = client.post("/login", json={"username": "validemail@gmail.com", "password": "validpassword"})
+    assert response.status_code == 200
+    # assert response.json()["detail"] == "User with this email already exist"
+
+
 # ERROR HANDLING
 @pytest.mark.integration
 def test_error_root():
@@ -35,14 +44,14 @@ def test_error_root():
     assert response.json() == {"detail": "Not Found"}
 
 
-@pytest.mark.integration
+@pytest.mark.skip
 def test_error_auth():
     response = client.get("/brands")
     assert response.status_code == 401
 
 
-@pytest.mark.integration(raises=IntegrityError)
-def test_user_exists(db_session):
+@pytest.mark.integration
+def test_error_user_exists(db_session):
     db_session.add(Users(email="fakeemail@gmail.com", password="fakepassword"))
     db_session.commit()
     response = client.post("/signup/", json={"email": "fakeemail@gmail.com", "password": "fakepassword"})

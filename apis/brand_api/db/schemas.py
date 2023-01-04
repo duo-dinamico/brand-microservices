@@ -40,10 +40,11 @@ class UserOut(UserBase):
     id: UUID
 
 
-class UserCreate(UserBase):
-    password: str
-
-
 class UserAuth(BaseModel):
     email: str = Field(..., description="user email")
     password: str = Field(..., min_length=5, max_length=24, description="user password")
+
+
+class TokenSchema(BaseModel):
+    access_token: str
+    refresh_token: str

@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
 
 from .db.models import Brands, Users
-from .db.schemas import UserCreate
 
 # def get_user(db: Session, user_id: int):
 #     return db.query(models.User).filter(models.User.id == user_id).first()
@@ -19,8 +18,8 @@ def read_user(db: Session, email):
     return db.query(Users).filter(Users.email == email).first()
 
 
-def create_user(db: Session, user: UserCreate):
-    db_user = Users(email=user.email, password=user.password)
+def create_user(db: Session, user):
+    db_user = Users(email=user["email"], password=user["password"])
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
