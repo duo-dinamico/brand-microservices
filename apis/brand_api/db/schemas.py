@@ -32,12 +32,9 @@ class Brands(BaseModel):
         orm_mode = True
 
 
-class UserBase(BaseModel):
-    email: str
-
-
-class UserOut(UserBase):
+class UserOut(BaseModel):
     id: UUID
+    email: str
 
 
 class UserAuth(BaseModel):
@@ -48,3 +45,12 @@ class UserAuth(BaseModel):
 class TokenSchema(BaseModel):
     access_token: str
     refresh_token: str
+
+
+class TokenPayload(BaseModel):
+    sub: str = None
+    exp: int = None
+
+
+class SystemUser(UserOut):
+    password: str

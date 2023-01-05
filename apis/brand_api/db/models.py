@@ -43,5 +43,6 @@ class Users(Base):
     email = Column(String, unique=True)
     password = Column(String)
 
+    @property
     def user_data(self):
         return {"id": self.id, "email": self.email, "password": self.password}

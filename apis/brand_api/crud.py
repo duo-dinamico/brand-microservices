@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 from .db.models import Brands, Users
 
@@ -23,7 +24,11 @@ def create_user(db: Session, user):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    return db_user.user_data()
+    return db_user.user_data
+
+
+def read_all_users(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(Users.id, Users.email).offset(skip).limit(limit).all()
 
 
 # def get_items(db: Session, skip: int = 0, limit: int = 100):
