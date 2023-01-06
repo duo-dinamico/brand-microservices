@@ -48,8 +48,8 @@ class TokenSchema(BaseModel):
 
 
 class TokenPayload(BaseModel):
-    sub: str = None
-    exp: int = None
+    sub: str = ""
+    exp: int = 0
 
 
 class SystemUser(UserOut):

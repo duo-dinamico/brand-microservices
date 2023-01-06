@@ -1,8 +1,8 @@
 import re
 
 import pytest
-from fastapi.testclient import TestClient
 from fastapi import Form
+from fastapi.testclient import TestClient
 
 from ..db.models import Users
 from ..main import app

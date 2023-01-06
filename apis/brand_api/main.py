@@ -4,7 +4,7 @@ from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from .crud import create_user, read_all_brands, read_user, read_all_users
+from .crud import create_user, read_all_brands, read_all_users, read_user
 from .db.database import SessionLocal, engine
 from .db.models import Base
 from .db.schemas import Brands, TokenSchema, UserAuth, UserOut

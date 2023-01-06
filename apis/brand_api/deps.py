@@ -1,16 +1,16 @@
 import os
-from sqlalchemy.orm import Session
-
-from typing import Any
 from datetime import datetime
+from typing import Any
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-
 from jose import jwt
 from pydantic import ValidationError
-from .db.schemas import TokenPayload, SystemUser
+from sqlalchemy.orm import Session
+
 from .db.database import SessionLocal
 from .db.models import Users
+from .db.schemas import SystemUser, TokenPayload
 
 reuseable_oauth = OAuth2PasswordBearer(tokenUrl="/login", scheme_name="JWT")
 
