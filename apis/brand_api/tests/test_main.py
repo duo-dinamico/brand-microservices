@@ -6,26 +6,24 @@ from fastapi.testclient import TestClient
 
 from ..db.models import Users
 from ..main import app
+from ..utils.password_hash import get_hashed_password
 
 client = TestClient(app)
 
 
 # DEFAULT BEHAVIOUR
-@pytest.mark.skip
+@pytest.mark.integration
 def test_success_brands(db_session):
-    db_session.add(Users(email="testemail@gmail.com", password="testpassword"))
+    db_session.add(Users(email="testemail@gmail.com", password=get_hashed_password("testpassword")))
     db_session.commit()
-    token = client.post("/login", json={"username": "testemail@gmail.com", "password": "testpassword"})
-    response = client.get(
-        "/brands",
-        headers={"Authorization": token.access_token},
-    )
+    token = client.post("/login", data={"username": "testemail@gmail.com", "password": "testpassword"})
+    response = client.get("/brands", headers={"Authorization": "Bearer " + token.json()["access_token"]})
     assert response.status_code == 200
     assert len(response.json()) >= 0
 
 
 @pytest.mark.integration
-def test_success_user_creation():
+def test_success_user_creation(db_session):
     response = client.post("/signup", json={"email": "newemail@gmail.com", "password": "newpassword"})
     assert response.status_code == 201
     assert response.json()["email"] == "newemail@gmail.com"
@@ -35,7 +33,7 @@ def test_success_user_creation():
 
 @pytest.mark.integration
 def test_success_user_login(db_session):
-    db_session.add(Users(email="validemail@gmail.com", password="validpassword"))
+    db_session.add(Users(email="validemail@gmail.com", password=get_hashed_password("validpassword")))
     db_session.commit()
     response = client.post("/login", data={"username": "validemail@gmail.com", "password": "validpassword"})
     assert response.status_code == 200
@@ -58,7 +56,7 @@ def test_error_auth():
 
 @pytest.mark.integration
 def test_error_user_exists(db_session):
-    db_session.add(Users(email="fakeemail@gmail.com", password="fakepasswords"))
+    db_session.add(Users(email="fakeemail@gmail.com", password=get_hashed_password("fakepasswords")))
     db_session.commit()
     response = client.post("/signup/", json={"email": "fakeemail@gmail.com", "password": "fakepassword"})
     assert response.status_code == 400
