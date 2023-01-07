@@ -36,7 +36,7 @@ itest: ## Run integration tests
 	$(ci-docker-compose) run --rm integration pytest-watch ./apis/brand_api/tests
 
 citest: ## Run ci tests
-	$(ci-docker-compose) run --rm pytest ./apis/brand_api/tests
+	$(ci-docker-compose) run --rm ci pytest ./apis/brand_api/tests
 
 check: ## Check the code base
 	poetry run black ./$(PROJECT) --check --diff --color
