@@ -2,15 +2,17 @@ name: brand_microservices_ci
 
 on:
   pull_request:
-    branches: [ "main", "develop" ]
+    branches: ["main", "develop"]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Run tests
-      run: make citest
+      - name: Cache
+        uses: actions/cache@v3.2.2
+
+      - name: Run tests
+        run: make citest
