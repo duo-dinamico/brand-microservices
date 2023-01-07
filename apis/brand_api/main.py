@@ -7,8 +7,8 @@ from sqlalchemy.orm import Session
 from .crud import create_user, read_all_brands, read_all_users, read_user
 from .db.database import SessionLocal, engine
 from .db.models import Base
-from .db.schemas import Brands, TokenSchema, UserAuth, UserOut
-from .deps import get_current_user
+from .dependencies import get_current_user
+from .schemas import Brands, TokenSchema, UserAuth, UserOut
 from .utils.password_hash import get_hashed_password, verify_password
 from .utils.tokens import create_access_token, create_refresh_token
 
@@ -24,14 +24,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
-
-# @app.post("/users/", response_model=schemas.User)
-# def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-#     db_user = crud.get_user_by_email(db, email=user.email)
-#     if db_user:
-#         raise HTTPException(status_code=400, detail="Email already registered")
-#     return crud.create_user(db=db, user=user)
 
 
 @app.get(
@@ -72,27 +64,16 @@ def post_login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Sessio
     "/users",
     summary="Get details of all users",
     response_model=List[UserOut],
-    # dependencies=[Depends(get_current_user)],
+    dependencies=[Depends(get_current_user)],
 )
 def get_all_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = read_all_users(db, skip=skip, limit=limit)
     return users
 
 
-# @app.get("/users/{user_id}", response_model=schemas.User)
+# @app.get("/users/me", response_model=schemas.User)
 # def read_user(user_id: int, db: Session = Depends(get_db)):
 #     db_user = crud.get_user(db, user_id=user_id)
 #     if db_user is None:
 #         raise HTTPException(status_code=404, detail="User not found")
 #     return db_user
-
-
-# @app.post("/users/{user_id}/items/", response_model=schemas.Item)
-# def create_item_for_user(user_id: int, item: schemas.ItemCreate, db: Session = Depends(get_db)):
-#     return crud.create_user_item(db=db, item=item, user_id=user_id)
-
-
-# @app.get("/items/", response_model=List[schemas.Item])
-# def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-#     items = crud.get_items(db, skip=skip, limit=limit)
-#     return items

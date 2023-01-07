@@ -10,11 +10,11 @@ from sqlalchemy.orm import Session
 
 from .db.database import SessionLocal
 from .db.models import Users
-from .db.schemas import SystemUser, TokenPayload
+from .schemas import SystemUser, TokenPayload
 
 reuseable_oauth = OAuth2PasswordBearer(tokenUrl="/login", scheme_name="JWT")
 
-# Dependency
+
 def get_db():
     db = SessionLocal()
     try:
