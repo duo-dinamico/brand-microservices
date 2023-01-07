@@ -16,6 +16,12 @@ services:
     volumes:
       - ./apis/brand_api:/home/user/apis/brand_api
       - ./common:/home/user/common
+    environment:
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - REFRESH_TOKEN_EXPIRE_MINUTES=10080
+      - ALGORITHM=HS256
+      - JWT_SECRET_KEY=chaveSecreta2!
+      - JWT_REFRESH_SECRET_KEY=frescaChaveSecreta2!
 
   brand_db:
     container_name: brand_db
