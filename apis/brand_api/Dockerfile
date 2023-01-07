@@ -25,7 +25,7 @@ ENV POETRY_NO_INTERACTION=1
 ENV POETRY_VIRTUALENVS_IN_PROJECT=true
 
 # copy files needed for poetry install, and run it
-COPY ./pyproject.toml ./poetry.lock ./alembic.ini ./
+COPY ./pyproject.toml ./poetry.lock ./alembic.ini ./.env ./
 RUN  --mount=type=cache,target=/root/.cache poetry install
 
 
