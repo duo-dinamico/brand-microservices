@@ -7,13 +7,15 @@ from ..main import app
 
 client = TestClient(app)
 
+methods_auth = [client.get, client.patch, client.delete]
+methods_users = [client.post, client.patch, client.delete]
 
 # DEFAULT BEHAVIOUR
 @pytest.mark.integration
-def test_success_brands(token_generator):
-    response = client.get("/brands", headers={"Authorization": "Bearer " + token_generator})
+def test_success_users(create_valid_user, token_generator):
+    response = client.get("/users", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 200
-    assert len(response.json()) >= 0
+    assert len(response.json()) >= 1
 
 
 @pytest.mark.integration
@@ -33,16 +35,19 @@ def test_success_user_login(create_valid_user):
 
 # ERROR HANDLING
 @pytest.mark.integration
-def test_error_root():
-    response = client.get("/")
-    assert response.status_code == 404
-    assert response.json() == {"detail": "Not Found"}
+def test_error_method_not_allowed_users():
+    for met in methods_users:
+        response = met("/users")
+        assert response.status_code == 405
 
 
 @pytest.mark.integration
-def test_error_auth():
-    response = client.get("/brands")
-    assert response.status_code == 401
+def test_error_method_not_allowed_auth():
+    for met in methods_auth:
+        response_signup = met("/signup")
+        assert response_signup.status_code == 405
+        response_login = met("/login")
+        assert response_login.status_code == 405
 
 
 @pytest.mark.integration

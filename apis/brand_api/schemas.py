@@ -3,14 +3,20 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 
-class Brands(BaseModel):
-    id: UUID
+class BrandsBase(BaseModel):
     name: str
     website: str
     category_id: UUID
     description: str
     average_price: str
     rating: int
+
+    class Config:
+        orm_mode = True
+
+
+class BrandsResponse(BrandsBase):
+    id: UUID
 
     class Config:
         orm_mode = True

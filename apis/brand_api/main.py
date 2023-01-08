@@ -4,11 +4,11 @@ from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from .crud import create_user, read_all_brands, read_all_users, read_user
+from .crud import create_brand, create_user, read_all_brands, read_all_users, read_brand, read_user
 from .db.database import SessionLocal, engine
 from .db.models import Base
 from .dependencies import get_current_user
-from .schemas import Brands, TokenSchema, UserAuth, UserOut
+from .schemas import BrandsBase, BrandsResponse, TokenSchema, UserAuth, UserOut
 from .utils.password_hash import get_hashed_password, verify_password
 from .utils.tokens import create_access_token, create_refresh_token
 
@@ -26,17 +26,54 @@ def get_db():
         db.close()
 
 
-@app.get(
+@app.post("/", status_code=405)
+def create_root():
+    pass
+
+
+@app.get("/", status_code=405)
+def read_root():
+    pass
+
+
+@app.patch("/", status_code=405)
+def update_root():
+    pass
+
+
+@app.delete("/", status_code=405)
+def delete_root():
+    pass
+
+
+@app.post(
     "/brands",
-    response_model=List[Brands],
+    summary="Create new brand",
+    response_model=BrandsResponse,
+    status_code=201,
     dependencies=[Depends(get_current_user)],
+    tags=["Brands"],
 )
+def post_brand(
+    data: BrandsBase,
+    db: Session = Depends(get_db),
+):
+    brand_name = read_brand(db, param={"name": data.name})
+    brand_website = read_brand(db, param={"website": data.website})
+    if brand_name is not None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Brand with this name already exist")
+    if brand_website is not None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Brand with this website already exist")
+    return create_brand(db, data)
+
+
+@app.get("/brands", response_model=List[BrandsResponse], dependencies=[Depends(get_current_user)], tags=["Brands"])
 def get_all_brands(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     brands = read_all_brands(db, skip=skip, limit=limit)
     return brands
 
 
-@app.post("/signup", summary="Create new user", response_model=UserOut, status_code=201)
+@app.post("/signup", summary="Create new user", response_model=UserOut, status_code=201, tags=["Users"])
 def post_user(data: UserAuth, db: Session = Depends(get_db)):
     user = read_user(db, email=data.email)
     if user is not None:
@@ -45,7 +82,7 @@ def post_user(data: UserAuth, db: Session = Depends(get_db)):
     return create_user(db, user)
 
 
-@app.post("/login", summary="Create access and refresh tokens for user", response_model=TokenSchema)
+@app.post("/login", summary="Create access and refresh tokens for user", response_model=TokenSchema, tags=["Users"])
 def post_login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = read_user(db, email=form_data.username)
     if user is None:
@@ -65,6 +102,7 @@ def post_login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Sessio
     summary="Get details of all users",
     response_model=List[UserOut],
     dependencies=[Depends(get_current_user)],
+    tags=["Users"],
 )
 def get_all_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = read_all_users(db, skip=skip, limit=limit)
