@@ -14,8 +14,8 @@ def db_session():
     Base.metadata.create_all(engine)
     session = SessionLocal()
     yield session
-    Base.metadata.drop_all(engine)
     session.close()
+    Base.metadata.drop_all(engine)
 
 
 @pytest.fixture

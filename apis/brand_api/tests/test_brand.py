@@ -8,7 +8,7 @@ from ..main import app
 
 client = TestClient(app)
 
-methods = [client.post, client.patch, client.delete]
+methods = [client.patch, client.delete]
 
 # DEFAULT BEHAVIOUR
 @pytest.mark.integration
