@@ -44,3 +44,19 @@ class TokenPayload(BaseModel):
 
 class SystemUser(UserOut):
     password: str
+
+
+class CategoriesBase(BaseModel):
+    name: str
+    description: str
+    price_per_category: int
+
+    class Config:
+        orm_mode = True
+
+
+class CategoriesResponse(CategoriesBase):
+    id: UUID
+
+    class Config:
+        orm_mode = True

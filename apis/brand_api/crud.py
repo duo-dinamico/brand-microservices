@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from .db.models import Brands, Users
+from .db.models import Brands, Categories, Users
 
 
 def create_brand(db: Session, brand):
@@ -25,6 +25,24 @@ def read_brand(db: Session, param):
 
 def read_all_brands(db: Session, skip: int = 0, limit: int = 100):
     return db.query(Brands).offset(skip).limit(limit).all()
+
+
+def create_category(db: Session, category):
+    db_category = Categories(
+        name=category.name, description=category.description, price_per_category=category.price_per_category
+    )
+    db.add(db_category)
+    db.commit()
+    db.refresh(db_category)
+    return db_category
+
+
+def read_all_categories(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(Categories).offset(skip).limit(limit).all()
+
+
+def read_category(db: Session, name):
+    return db.query(Categories).filter(Categories.name == name).first()
 
 
 def read_user(db: Session, email):
