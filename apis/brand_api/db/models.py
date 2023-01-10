@@ -19,7 +19,7 @@ class Brands(Base):
     rating = Column(Integer)
 
 
-class MyEnum(enum.Enum):
+class MyEnum(int, enum.Enum):
     one = 1
     two = 2
     three = 3
