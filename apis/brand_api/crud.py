@@ -2,12 +2,25 @@ from sqlalchemy.orm import Session
 
 from .db.models import Brands, Users
 
-# def get_user(db: Session, user_id: int):
-#     return db.query(models.User).filter(models.User.id == user_id).first()
+
+def create_brand(db: Session, brand):
+    db_brand = Brands(
+        name=brand.name,
+        website=brand.website,
+        description=brand.description,
+        category_id=brand.category_id,
+        average_price=brand.average_price,
+        rating=brand.rating,
+    )
+    db.add(db_brand)
+    db.commit()
+    db.refresh(db_brand)
+    return db_brand
 
 
-# def get_user_by_email(db: Session, email: str):
-#     return db.query(models.User).filter(models.User.email == email).first()
+def read_brand(db: Session, param):
+    filtering_param = list(param.keys())[0]
+    return db.query(Brands).filter(getattr(Brands, filtering_param, None) == param.get(filtering_param)).first()
 
 
 def read_all_brands(db: Session, skip: int = 0, limit: int = 100):

@@ -13,32 +13,69 @@ services:
     build:
       dockerfile: ./apis/brand_api/Dockerfile
       context: .
-    volumes:
-      - ./apis/brand_api:/home/user/apis/brand_api
-      - ./common:/home/user/common
     environment:
       - ACCESS_TOKEN_EXPIRE_MINUTES=30
       - REFRESH_TOKEN_EXPIRE_MINUTES=10080
       - ALGORITHM=HS256
       - JWT_SECRET_KEY=chaveSecreta2!
       - JWT_REFRESH_SECRET_KEY=frescaChaveSecreta2!
+      - SQLALCHEMY_DATABASE_URL=postgresql://postgres:postgres@brand_db/brand_db_${ENVIRONMENT}
+    volumes:
+      - ./apis/brand_api:/home/user/apis/brand_api
+
+  integration:
+    container_name: brand_api_integration
+    depends_on:
+      brand_db:
+        condition: service_healthy
+    build:
+      context: .
+      dockerfile: ./apis/brand_api/Dockerfile
+      target: test
+    environment:
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - REFRESH_TOKEN_EXPIRE_MINUTES=10080
+      - ALGORITHM=HS256
+      - JWT_SECRET_KEY=chaveSecreta2!
+      - JWT_REFRESH_SECRET_KEY=frescaChaveSecreta2!
+      - SQLALCHEMY_DATABASE_URL=postgresql://postgres:postgres@brand_db/brand_db_${ENVIRONMENT}
+    volumes:
+      - ./apis/brand_api:/home/user/apis/brand_api
+
+  ci:
+    container_name: brand_api_ci
+    depends_on:
+      brand_db:
+        condition: service_healthy
+    build:
+      context: .
+      dockerfile: ./apis/brand_api/Dockerfile
+      target: test
+    environment:
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - REFRESH_TOKEN_EXPIRE_MINUTES=10080
+      - ALGORITHM=HS256
+      - JWT_SECRET_KEY=chaveSecreta2!
+      - JWT_REFRESH_SECRET_KEY=frescaChaveSecreta2!
+      - SQLALCHEMY_DATABASE_URL=postgresql://postgres:postgres@brand_db/brand_db_${ENVIRONMENT}
+    volumes:
+      - ./apis/brand_api:/home/user/apis/brand_api
 
   brand_db:
     container_name: brand_db
     image: postgres:13
     ports:
       - "5432:5432"
-    volumes:
-      - ./psql_db:/var/lib/postgresql/data
+    # volumes:
+    #   - ./psql_db:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=brand_db
+      - POSTGRES_DB=brand_db_${ENVIRONMENT}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 3
-
-volumes:
-  psql_db:
+# volumes:
+#   psql_db:
