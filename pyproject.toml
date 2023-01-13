@@ -36,7 +36,7 @@ repository = "https://github.com/duo-dinamico/brand-microservices"
 # Only the name and a version string are required in this case.
 # Be aware that declaring the python version for which your package is compatible is mandatory:
 python = "^3.11"
-fastapi = "^0.88.0"
+fastapi = "^0.89.1"
 uvicorn = "^0.20.0"
 SQLAlchemy = "^1.4.45"
 alembic = "^1.8.1"
