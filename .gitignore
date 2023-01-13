@@ -135,4 +135,4 @@ psql_db/
 .vscode
 
 # Lock from package managers
-.lock
+*.lock
