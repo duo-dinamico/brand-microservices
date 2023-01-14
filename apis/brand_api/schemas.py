@@ -60,3 +60,12 @@ class CategoriesResponse(CategoriesBase):
 
     class Config:
         orm_mode = True
+
+
+class CategoriesBasePatch(BaseModel):
+    name: str | None
+    description: str | None
+    price_per_category: int | None
+
+    class Config:
+        orm_mode = True

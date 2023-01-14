@@ -1,6 +1,7 @@
 from typing import List
+from uuid import UUID
 
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, Path, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
@@ -14,11 +15,21 @@ from .crud import (
     read_brand,
     read_category,
     read_user,
+    update_category,
 )
 from .db.database import SessionLocal, engine
 from .db.models import Base
 from .dependencies import get_current_user
-from .schemas import BrandsBase, BrandsResponse, CategoriesBase, CategoriesResponse, TokenSchema, UserAuth, UserOut
+from .schemas import (
+    BrandsBase,
+    BrandsResponse,
+    CategoriesBase,
+    CategoriesBasePatch,
+    CategoriesResponse,
+    TokenSchema,
+    UserAuth,
+    UserOut,
+)
 from .utils.password_hash import get_hashed_password, verify_password
 from .utils.tokens import create_access_token, create_refresh_token
 
@@ -77,7 +88,7 @@ def get_all_brands(skip: int = 0, limit: int = 100, db: Session = Depends(get_db
     tags=["Categories"],
 )
 def post_category(data: CategoriesBase, db: Session = Depends(get_db)):
-    category_name = read_category(db, data.name)
+    category_name = read_category(db, param={"name": data.name})
     if category_name is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Category with this name already exists")
     return create_category(db, data)
@@ -92,6 +103,26 @@ def post_category(data: CategoriesBase, db: Session = Depends(get_db)):
 def get_all_categories(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     categories = read_all_categories(db, skip=skip, limit=limit)
     return categories
+
+
+@app.patch(
+    "/categories/{category_id}",
+    response_model=CategoriesResponse,
+    dependencies=[Depends(get_current_user)],
+    tags=["Categories"],
+)
+def patch_category(
+    data: CategoriesBasePatch,
+    category_id: UUID = Path(title="The id of the category to update"),
+    db: Session = Depends(get_db),
+):
+    category = read_category(db, param={"id": category_id})
+    if category is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
+    update_data = data.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(category, key, value)
+    return update_category(db, category)
 
 
 @app.post("/signup", summary="Create new user", response_model=UserOut, status_code=201, tags=["Users"])
