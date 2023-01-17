@@ -2,15 +2,20 @@ name: brand_microservices_ci
 
 on:
   pull_request:
-    branches: [ "main", "develop" ]
+    branches: ["main", "develop"]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/labeler@v4
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+      - uses: actions/checkout@v3
 
-    - name: Run tests
-      run: make citest
+      - name: Run tests
+        run: make citest
