@@ -53,6 +53,12 @@ def update_category(db: Session, category):
     return category
 
 
+def crud_delete_category(db: Session, category):
+    db.delete(category)
+    db.commit()
+    return {"ok": True}
+
+
 def read_user(db: Session, email):
     return db.query(Users).filter(Users.email == email).first()
 

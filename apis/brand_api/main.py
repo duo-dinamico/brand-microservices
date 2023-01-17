@@ -9,6 +9,7 @@ from .crud import (
     create_brand,
     create_category,
     create_user,
+    crud_delete_category,
     read_all_brands,
     read_all_categories,
     read_all_users,
@@ -123,6 +124,14 @@ def patch_category(
     for key, value in update_data.items():
         setattr(category, key, value)
     return update_category(db, category)
+
+
+@app.delete("/categories/{category_id}", dependencies=[Depends(get_current_user)], tags=["Categories"], status_code=204)
+def delete_category(category_id: UUID = Path(title="The id of the category to delete"), db: Session = Depends(get_db)):
+    category = read_category(db, param={"id": category_id})
+    if category is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
+    return crud_delete_category(db, category)
 
 
 @app.post("/signup", summary="Create new user", response_model=UserOut, status_code=201, tags=["Users"])
