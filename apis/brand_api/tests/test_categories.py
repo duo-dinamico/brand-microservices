@@ -129,6 +129,18 @@ def test_error_categories_update_nonexistent_category(token_generator, create_va
 
 
 @pytest.mark.integration
+def test_error_categories_update_wrong_price(db_session, token_generator, create_valid_category):
+    category_id = db_session.query(Categories).first().id
+    response = client.patch(
+        f"/categories/{category_id}",
+        headers={"Authorization": "Bearer " + token_generator},
+        json={"price_per_category": 8},
+    )
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["msg"] == "value is not a valid enumeration member; permitted: 1, 2, 3, 4, 5"
+
+
+@pytest.mark.integration
 def test_error_categories_delete_nonexistent_category(token_generator, create_valid_category):
     response = client.delete(f"/categories/{uuid.uuid4()}", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 404
