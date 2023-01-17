@@ -1,9 +1,10 @@
 from sqlalchemy.orm import Session
 
 from .db.models import Brands, Categories, Users
+from .schemas import BrandsBase
 
 
-def create_brand(db: Session, brand):
+def create_brand(db: Session, brand: BrandsBase) -> Brands:
     db_brand = Brands(
         name=brand.name,
         website=brand.website,
@@ -18,7 +19,7 @@ def create_brand(db: Session, brand):
     return db_brand
 
 
-def read_brand(db: Session, param):
+def read_brand(db: Session, param: dict[str, str]):
     filtering_param = list(param.keys())[0]
     return db.query(Brands).filter(getattr(Brands, filtering_param, None) == param.get(filtering_param)).first()
 
