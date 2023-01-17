@@ -41,8 +41,16 @@ def read_all_categories(db: Session, skip: int = 0, limit: int = 100):
     return db.query(Categories).offset(skip).limit(limit).all()
 
 
-def read_category(db: Session, name):
-    return db.query(Categories).filter(Categories.name == name).first()
+def read_category(db: Session, param):
+    filtering_param = list(param.keys())[0]
+    return db.query(Categories).filter(getattr(Categories, filtering_param, None) == param.get(filtering_param)).first()
+
+
+def update_category(db: Session, category):
+    db.add(category)
+    db.commit()
+    db.refresh(category)
+    return category
 
 
 def read_user(db: Session, email):
