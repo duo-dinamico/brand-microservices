@@ -9,7 +9,7 @@ from ..main import app
 client = TestClient(app)
 
 methods = [client.patch, client.delete]
-methods_category_id = [client.post, client.get, client.delete]
+methods_category_id = [client.post, client.get]
 
 # DEFAULT BEHAVIOUR
 @pytest.mark.integration
@@ -69,6 +69,18 @@ def test_success_categories_update_price(db_session, token_generator, create_val
     assert response.json()["price_per_category"] == 5
 
 
+@pytest.mark.integration
+def test_success_categories_delete(db_session, token_generator, create_valid_category):
+    category_id = db_session.query(Categories).first().id
+    response = client.delete(
+        f"/categories/{category_id}",
+        headers={"Authorization": "Bearer " + token_generator},
+    )
+    assert response.status_code == 204
+    category_deleted = db_session.query(Categories).all()
+    assert category_deleted == []
+
+
 # ERROR HANDLING
 @pytest.mark.integration
 def test_error_method_not_allowed_categories():
@@ -85,15 +97,22 @@ def test_error_method_not_allowed_categories_id():
 
 
 @pytest.mark.integration
-def test_error_not_authorized_categories():
+def test_error_not_authorized_get_categories():
     response = client.get("/categories")
     assert response.status_code == 401
     assert response.json()["detail"] == "Not authenticated"
 
 
 @pytest.mark.integration
-def test_error_not_authorized_categories_id():
+def test_error_not_authorized_patch_categories_id():
     response = client.patch(f"/categories/{uuid.uuid4()}")
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Not authenticated"
+
+
+@pytest.mark.integration
+def test_error_not_authorized_delete_categories_id():
+    response = client.delete(f"/categories/{uuid.uuid4()}")
     assert response.status_code == 401
     assert response.json()["detail"] == "Not authenticated"
 
@@ -105,5 +124,12 @@ def test_error_categories_update_nonexistent_category(token_generator, create_va
         headers={"Authorization": "Bearer " + token_generator},
         json={"name": "updatedCategoryName"},
     )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Category not found"
+
+
+@pytest.mark.integration
+def test_error_categories_delete_nonexistent_category(token_generator, create_valid_category):
+    response = client.delete(f"/categories/{uuid.uuid4()}", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 404
     assert response.json()["detail"] == "Category not found"
