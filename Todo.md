@@ -1,6 +1,6 @@
 # Prioridades
 
-- Routes para patch de brand, user e categories
+- Routes para patch de brand, user e ~~categories~~
 - Routes para delete de brand, user e categories
 - Mudar secrets para github secrets
 - Adicionar mais testes e testar a validacao
