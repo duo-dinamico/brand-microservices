@@ -23,8 +23,8 @@ services:
     volumes:
       - ./apis/brand_api:/home/user/apis/brand_api
 
-  integration:
-    container_name: brand_api_integration
+  unit:
+    container_name: brand_api_unit
     depends_on:
       brand_db:
         condition: service_healthy

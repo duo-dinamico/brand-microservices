@@ -9,6 +9,7 @@ from .crud import (
     create_brand,
     create_category,
     create_user,
+    crud_delete_brand,
     crud_delete_category,
     read_all_brands,
     read_all_categories,
@@ -24,8 +25,7 @@ from .dependencies import get_current_user
 from .schemas import (
     BrandsBase,
     BrandsResponse,
-    CategoriesBase,
-    CategoriesBasePatch,
+    CategoriesBaseOptionalBody,
     CategoriesResponse,
     TokenSchema,
     UserAuth,
@@ -80,6 +80,14 @@ def get_all_brands(skip: int = 0, limit: int = 100, db: Session = Depends(get_db
     return brands
 
 
+@app.delete("/brands/{brand_id}", dependencies=[Depends(get_current_user)], tags=["Brands"], status_code=204)
+def delete_brand(brand_id: UUID = Path(title="The id of the brand to delete"), db: Session = Depends(get_db)):
+    brand = read_brand(db, param={"id": brand_id})
+    if brand is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Brand not found")
+    return crud_delete_brand(db, brand)
+
+
 @app.post(
     "/categories",
     summary="Create new category",
@@ -88,7 +96,7 @@ def get_all_brands(skip: int = 0, limit: int = 100, db: Session = Depends(get_db
     dependencies=[Depends(get_current_user)],
     tags=["Categories"],
 )
-def post_category(data: CategoriesBase, db: Session = Depends(get_db)):
+def post_category(data: CategoriesBaseOptionalBody, db: Session = Depends(get_db)):
     category_name = read_category(db, param={"name": data.name})
     if category_name is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Category with this name already exists")
@@ -113,7 +121,7 @@ def get_all_categories(skip: int = 0, limit: int = 100, db: Session = Depends(ge
     tags=["Categories"],
 )
 def patch_category(
-    data: CategoriesBasePatch,
+    data: CategoriesBaseOptionalBody,
     category_id: UUID = Path(title="The id of the category to update"),
     db: Session = Depends(get_db),
 ):

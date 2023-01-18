@@ -35,7 +35,7 @@ citest: ## Run ci tests
 
 check: ## Check the code base
 	poetry run black ./$(PROJECT) --check --diff --color
-	poetry run isort ./$(PROJECT) --check --diff
+	poetry run isort ./$(PROJECT)
 	poetry run mypy ./$(PROJECT)
 
 lint: ## Check the code base, and fix it

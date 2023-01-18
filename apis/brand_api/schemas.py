@@ -64,7 +64,7 @@ class CategoriesResponse(CategoriesBase):
         orm_mode = True
 
 
-class CategoriesBasePatch(BaseModel):
+class CategoriesBaseOptionalBody(BaseModel):
     name: str | None
     description: str | None
     price_per_category: MyEnum | None
