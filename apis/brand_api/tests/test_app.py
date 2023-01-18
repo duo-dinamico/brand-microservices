@@ -13,7 +13,7 @@ methods = [client.post, client.get, client.patch, client.delete]
 
 
 # ERROR HANDLING
-@pytest.mark.integration
+@pytest.mark.unit
 def test_error_method_not_allowed():
     for met in methods:
         response = met("/")
