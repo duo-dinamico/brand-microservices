@@ -2,6 +2,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from .db.models import MyEnum
+
 
 class BrandsBase(BaseModel):
     name: str
@@ -49,7 +51,7 @@ class SystemUser(UserOut):
 class CategoriesBase(BaseModel):
     name: str
     description: str
-    price_per_category: int
+    price_per_category: MyEnum
 
     class Config:
         orm_mode = True
@@ -65,7 +67,7 @@ class CategoriesResponse(CategoriesBase):
 class CategoriesBasePatch(BaseModel):
     name: str | None
     description: str | None
-    price_per_category: int | None
+    price_per_category: MyEnum | None
 
     class Config:
         orm_mode = True
