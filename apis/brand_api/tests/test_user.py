@@ -77,9 +77,8 @@ def test_error_user_delete_non_existing_user(token_generator) -> None:
 
 
 @pytest.mark.unit
-def test_error_not_authorized_delete_users_id(db_session, create_valid_user) -> None:
-    user_id = db_session.query(Users).first().id
-    response = client.delete(f"/users/{user_id}")
+def test_error_not_authorized_delete_users_id() -> None:
+    response = client.delete(f"/users/{uuid4()}")
     assert response.status_code == 401
     assert response.json()["detail"] == "Not authenticated"
 

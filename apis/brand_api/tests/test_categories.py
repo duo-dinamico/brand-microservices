@@ -148,7 +148,7 @@ def test_error_categories_update_wrong_price(db_session, token_generator, create
 
 
 @pytest.mark.unit
-def test_error_categories_delete_nonexistent_category(token_generator, create_valid_category):
+def test_error_categories_delete_nonexistent_category(token_generator):
     response = client.delete(f"/categories/{uuid.uuid4()}", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 404
     assert response.json()["detail"] == "Category not found"
