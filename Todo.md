@@ -1,7 +1,7 @@
 # Prioridades
 
 - Routes para patch de brand, user e ~~categories~~
-- Routes para delete de ~~brand~~, user e ~~categories~~
+- Routes para delete de ~~brand~~, ~~user~~ e ~~categories~~
 - Mudar modelos para adicionar created at, created by, updated at, updated by, deleted at, deleted by
 - Mudar secrets para github secrets
 - Adicionar mais testes e testar a validacao
