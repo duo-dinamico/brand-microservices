@@ -1,4 +1,5 @@
-import uuid
+from typing import Callable
+from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -82,34 +83,34 @@ def test_error_method_brand_not_allowed():
 @pytest.mark.unit
 def test_error_method_brand_id_not_allowed():
     for met in methods_brand_id:
-        response = met(f"/brands/{uuid.uuid4()}")
+        response = met(f"/brands/{uuid4()}")
         assert response.status_code == 405
 
 
 @pytest.mark.unit
-def test_error_brand_not_authorized():
+def test_error_get_brand_not_authorized():
     response = client.get("/brands")
     assert response.status_code == 401
     assert response.json()["detail"] == "Not authenticated"
 
 
 @pytest.mark.unit
-def test_error_brand_id_not_authorized():
-    response = client.delete(f"/brands/{uuid.uuid4()}")
+def test_error_delete_brand_id_not_authorized():
+    response = client.delete(f"/brands/{uuid4()}")
     assert response.status_code == 401
     assert response.json()["detail"] == "Not authenticated"
 
 
 @pytest.mark.unit
-def test_error_brand_does_not_exist(token_generator, create_valid_brand):
-    response = client.delete(f"/brands/{uuid.uuid4()}", headers={"Authorization": "Bearer " + token_generator})
+def test_error_delete_brand_does_not_exist(token_generator, create_valid_brand):
+    response = client.delete(f"/brands/{uuid4()}", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 404
     assert response.json()["detail"] == "Brand not found"
 
 
 @pytest.mark.unit
-def test_error_brand_update_category(db_session, token_generator, create_valid_brand):
-    random_category_id = uuid.uuid4()
+def test_error_update_brand_category_must_exist(db_session, token_generator, create_valid_brand):
+    random_category_id = uuid4()
     brand_id = db_session.query(Brands).first().id
     response = client.patch(
         f"/brands/{brand_id}",
