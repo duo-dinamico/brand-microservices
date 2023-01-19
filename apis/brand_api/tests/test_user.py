@@ -1,14 +1,17 @@
 import re
+from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
 
+from ..db.models import Users
 from ..main import app
 
 client = TestClient(app)
 
 methods_auth = [client.get, client.patch, client.delete]
 methods_users = [client.post, client.patch, client.delete]
+methods_users_id = [client.post, client.get, client.patch]
 
 # DEFAULT BEHAVIOUR
 @pytest.mark.unit
@@ -33,11 +36,27 @@ def test_success_user_login(create_valid_user):
     assert response.status_code == 200
 
 
+@pytest.mark.unit
+def test_success_user_delete(db_session, token_generator, create_valid_user) -> None:
+    user_id = db_session.query(Users).first().id
+    response = client.delete(f"/users/{user_id}", headers={"Authorization": "Bearer " + token_generator})
+    assert response.status_code == 204
+    user_deleted = db_session.query(Users).all()
+    assert user_deleted == []
+
+
 # ERROR HANDLING
 @pytest.mark.unit
 def test_error_method_not_allowed_users():
     for met in methods_users:
         response = met("/users")
+        assert response.status_code == 405
+
+
+@pytest.mark.unit
+def test_error_method_not_allowed_users_id():
+    for met in methods_users_id:
+        response = met(f"/users/{uuid4()}")
         assert response.status_code == 405
 
 
@@ -48,6 +67,20 @@ def test_error_method_not_allowed_auth():
         assert response_signup.status_code == 405
         response_login = met("/login")
         assert response_login.status_code == 405
+
+
+@pytest.mark.unit
+def test_error_user_delete_non_existing_user(token_generator) -> None:
+    response = client.delete(f"/users/{uuid4()}", headers={"Authorization": "Bearer " + token_generator})
+    assert response.status_code == 404
+    assert response.json()["detail"] == "User not found"
+
+
+@pytest.mark.unit
+def test_error_not_authorized_delete_users_id() -> None:
+    response = client.delete(f"/users/{uuid4()}")
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Not authenticated"
 
 
 @pytest.mark.unit
