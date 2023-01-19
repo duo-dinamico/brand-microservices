@@ -11,6 +11,7 @@ from .crud import (
     create_user,
     crud_delete_brand,
     crud_delete_category,
+    crud_delete_user,
     read_all_brands,
     read_all_categories,
     read_all_users,
@@ -142,9 +143,17 @@ def delete_category(category_id: UUID = Path(title="The id of the category to de
     return crud_delete_category(db, category)
 
 
+@app.delete("/users/{user_id}", dependencies=[Depends(get_current_user)], tags=["Users"], status_code=204)
+def delete_user(user_id: UUID = Path(title="The id of the user to delete"), db: Session = Depends(get_db)):
+    user = read_user(db, param={"id": user_id})
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return crud_delete_user(db, user)
+
+
 @app.post("/signup", summary="Create new user", response_model=UserOut, status_code=201, tags=["Users"])
 def post_user(data: UserAuth, db: Session = Depends(get_db)):
-    user = read_user(db, email=data.email)
+    user = read_user(db, param={"email": data.email})
     if user is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User with this email already exist")
     user = {"email": data.email, "password": get_hashed_password(data.password)}
@@ -153,7 +162,7 @@ def post_user(data: UserAuth, db: Session = Depends(get_db)):
 
 @app.post("/login", summary="Create access and refresh tokens for user", response_model=TokenSchema, tags=["Users"])
 def post_login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = read_user(db, email=form_data.username)
+    user = read_user(db, param={"email": form_data.username})
     if user is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect email or password1")
 
