@@ -30,6 +30,13 @@ def read_all_brands(db: Session, skip: int = 0, limit: int = 100) -> list[Brands
     return db.query(Brands).offset(skip).limit(limit).all()
 
 
+def update_brand(db: Session, brand) -> Brands:
+    db.add(brand)
+    db.commit()
+    db.refresh(brand)
+    return brand
+
+
 def crud_delete_brand(db: Session, brand: BrandsResponse) -> dict[str, bool]:
     db.delete(brand)
     db.commit()

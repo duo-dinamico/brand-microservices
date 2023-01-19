@@ -24,6 +24,18 @@ class BrandsResponse(BrandsBase):
         orm_mode = True
 
 
+class BrandsBaseOptionalBody(BaseModel):
+    name: str | None
+    website: str | None
+    category_id: UUID | None
+    description: str | None
+    average_price: str | None
+    rating: int | None
+
+    class Config:
+        orm_mode = True
+
+
 class UserOut(BaseModel):
     id: UUID
     email: str
