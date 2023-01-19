@@ -9,8 +9,9 @@ from ..main import app
 
 client = TestClient(app)
 
-methods_auth = [client.get, client.patch]
-methods_users = [client.post, client.patch]
+methods_auth = [client.get, client.patch, client.delete]
+methods_users = [client.post, client.patch, client.delete]
+methods_users_id = [client.post, client.get, client.patch]
 
 # DEFAULT BEHAVIOUR
 @pytest.mark.unit
@@ -49,6 +50,13 @@ def test_success_user_delete(db_session, token_generator, create_valid_user) -> 
 def test_error_method_not_allowed_users():
     for met in methods_users:
         response = met("/users")
+        assert response.status_code == 405
+
+
+@pytest.mark.unit
+def test_error_method_not_allowed_users_id():
+    for met in methods_users_id:
+        response = met(f"/users/{uuid4()}")
         assert response.status_code == 405
 
 
