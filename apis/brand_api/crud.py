@@ -68,8 +68,15 @@ def crud_delete_category(db: Session, category) -> dict[str, bool]:
     return {"ok": True}
 
 
-def read_user(db: Session, email) -> Users:
-    return db.query(Users).filter(Users.email == email).first()
+def crud_delete_user(db: Session, user) -> dict[str, bool]:
+    db.delete(user)
+    db.commit()
+    return {"ok": True}
+
+
+def read_user(db: Session, param) -> Users:
+    filtering_param = list(param.keys())[0]
+    return db.query(Users).filter(getattr(Users, filtering_param, None) == param.get(filtering_param)).first()
 
 
 def create_user(db: Session, user) -> dict[str, str]:
