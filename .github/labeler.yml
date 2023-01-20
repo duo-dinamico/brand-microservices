@@ -1,3 +1,0 @@
-# Add 'brand_api' label to all changes in the 'apis/brand_api' directory
-brand_api:
-  - apis/brand_api/*
