@@ -75,6 +75,13 @@ def crud_delete_category(db: Session, category) -> dict[str, bool]:
     return {"ok": True}
 
 
+def update_user(db: Session, user) -> dict[str, bool]:
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return {"ok": True}
+
+
 def crud_delete_user(db: Session, user) -> dict[str, bool]:
     db.delete(user)
     db.commit()
@@ -96,15 +103,3 @@ def create_user(db: Session, user) -> dict[str, str]:
 
 def read_all_users(db: Session, skip: int = 0, limit: int = 100) -> list[dict[str, str]]:
     return db.query(Users.id, Users.email).offset(skip).limit(limit).all()
-
-
-# def get_items(db: Session, skip: int = 0, limit: int = 100):
-#     return db.query(models.Item).offset(skip).limit(limit).all()
-
-
-# def create_user_item(db: Session, item: schemas.ItemCreate, user_id: int):
-#     db_item = models.Item(**item.dict(), owner_id=user_id)
-#     db.add(db_item)
-#     db.commit()
-#     db.refresh(db_item)
-#     return db_item

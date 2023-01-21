@@ -20,6 +20,7 @@ from .crud import (
     read_user,
     update_brand,
     update_category,
+    update_user,
 )
 from .db.database import SessionLocal, engine
 from .db.models import Base
@@ -33,6 +34,7 @@ from .schemas import (
     TokenSchema,
     UserAuth,
     UserOut,
+    UserPasswordUpdate,
 )
 from .utils.password_hash import get_hashed_password, verify_password
 from .utils.tokens import create_access_token, create_refresh_token
@@ -164,6 +166,17 @@ def delete_category(category_id: UUID = Path(title="The id of the category to de
     if category is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
     return crud_delete_category(db, category)
+
+
+@app.patch("/users/{user_id}", dependencies=[Depends(get_current_user)], tags=["Users"])
+def patch_user(
+    data: UserPasswordUpdate, user_id: UUID = Path(title="User id to update"), db: Session = Depends(get_db)
+):
+    user = read_user(db, param={"id": user_id})
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    setattr(user, "password", get_hashed_password(data.password))
+    return update_user(db, user)
 
 
 @app.delete("/users/{user_id}", dependencies=[Depends(get_current_user)], tags=["Users"], status_code=204)
