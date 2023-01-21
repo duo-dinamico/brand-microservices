@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Extra, Field
 
 from .db.models import MyEnum
 
@@ -58,6 +58,13 @@ class TokenPayload(BaseModel):
 
 class SystemUser(UserOut):
     password: str
+
+
+class UserPasswordUpdate(BaseModel):
+    password: str = Field(..., min_length=5, max_length=24, description="user password")
+
+    class Config:
+        extra = Extra.forbid
 
 
 class CategoriesBase(BaseModel):

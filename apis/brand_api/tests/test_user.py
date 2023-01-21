@@ -6,12 +6,13 @@ from fastapi.testclient import TestClient
 
 from ..db.models import Users
 from ..main import app
+from ..utils.password_hash import verify_password
 
 client = TestClient(app)
 
 methods_auth = [client.get, client.patch, client.delete]
 methods_users = [client.post, client.patch, client.delete]
-methods_users_id = [client.post, client.get, client.patch]
+methods_users_id = [client.post, client.get]
 
 # DEFAULT BEHAVIOUR
 @pytest.mark.unit
@@ -43,6 +44,19 @@ def test_success_user_delete(db_session, token_generator, create_valid_user) -> 
     assert response.status_code == 204
     user_deleted = db_session.query(Users).all()
     assert user_deleted == []
+
+
+@pytest.mark.unit
+def test_success_user_patch(db_session, token_generator, create_valid_user) -> None:
+    user_id = db_session.query(Users).first().id
+    response = client.patch(
+        f"/users/{user_id}",
+        headers={"Authorization": "Bearer " + token_generator},
+        json={"password": "newvalidpassword"},
+    )
+    assert response.status_code == 200
+    password_match_check = db_session.query(Users).first().password
+    assert verify_password("newvalidpassword", password_match_check)
 
 
 # ERROR HANDLING
@@ -84,7 +98,25 @@ def test_error_not_authorized_delete_users_id() -> None:
 
 
 @pytest.mark.unit
+def test_error_not_authorized_patch_users_id() -> None:
+    response = client.patch(f"/users/{uuid4()}")
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Not authenticated"
+
+
+@pytest.mark.unit
 def test_error_user_exists(create_valid_user):
     response = client.post("/signup", json={"email": "validemail@gmail.com", "password": "validpassword"})
     assert response.status_code == 400
     assert response.json()["detail"] == "User with this email already exist"
+
+
+@pytest.mark.unit
+def test_error_user_does_not_exist(token_generator) -> None:
+    response = client.patch(
+        f"/users/{uuid4()}",
+        headers={"Authorization": "Bearer " + token_generator},
+        json={"password": "newvalidpassword"},
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "User not found"
