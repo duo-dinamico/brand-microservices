@@ -18,6 +18,7 @@ from .crud import (
     read_brand,
     read_category,
     read_user,
+    update_brand,
     update_category,
 )
 from .db.database import SessionLocal, engine
@@ -25,6 +26,7 @@ from .db.models import Base
 from .dependencies import get_current_user
 from .schemas import (
     BrandsBase,
+    BrandsBaseOptionalBody,
     BrandsResponse,
     CategoriesBaseOptionalBody,
     CategoriesResponse,
@@ -79,6 +81,27 @@ def post_brand(
 def get_all_brands(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     brands = read_all_brands(db, skip=skip, limit=limit)
     return brands
+
+
+@app.patch(
+    "/brands/{brand_id}", response_model=BrandsResponse, dependencies=[Depends(get_current_user)], tags=["Brands"]
+)
+def patch_brand(
+    data: BrandsBaseOptionalBody,
+    brand_id: UUID = Path(title="The id of the brand to update"),
+    db: Session = Depends(get_db),
+):
+    brand = read_brand(db, param={"id": brand_id})
+    if brand is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Brand not found")
+    update_data = data.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        if key == "category_id":
+            category = read_category(db, param={"id": value})
+            if category is None:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category must exist")
+        setattr(brand, key, value)
+    return update_brand(db, brand)
 
 
 @app.delete("/brands/{brand_id}", dependencies=[Depends(get_current_user)], tags=["Brands"], status_code=204)
