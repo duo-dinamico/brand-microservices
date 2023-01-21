@@ -1,0 +1,4 @@
+enhancement: ["feature/*", "feat/*"]
+bug: ["fix/*", "bug/*"]
+documentation: ["doc/*", "documentation/*"]
+workflow: ["workflow/*", "ci/*"]
