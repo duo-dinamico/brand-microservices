@@ -1,7 +1,8 @@
 import enum
 import uuid
+from datetime import datetime
 
-from sqlalchemy import Column, Enum, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 
 from .database import Base
@@ -17,6 +18,14 @@ class Brands(Base):
     description = Column(String)
     average_price = Column(String)
     rating = Column(Integer)
+
+    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    updated_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), default=None)
+    deleted_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), default=None)
+
+    created_at = Column(DateTime, default=datetime.now())
+    updated_at = Column(DateTime, default=None)
+    deleted_at = Column(DateTime, default=None)
 
 
 class MyEnum(int, enum.Enum):
@@ -35,6 +44,14 @@ class Categories(Base):
     description = Column(String)
     price_per_category = Column(Enum(MyEnum))
 
+    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    updated_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), default=None)
+    deleted_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), default=None)
+
+    created_at = Column(DateTime, default=datetime.now())
+    updated_at = Column(DateTime, default=None)
+    deleted_at = Column(DateTime, default=None)
+
 
 class Users(Base):
     __tablename__ = "users"
@@ -43,6 +60,9 @@ class Users(Base):
     email = Column(String, unique=True)
     password = Column(String)
 
-    @property
-    def user_data(self):
-        return {"id": self.id, "email": self.email, "password": self.password}
+    updated_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), default=None)
+    deleted_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), default=None)
+
+    created_at = Column(DateTime, default=datetime.now())
+    updated_at = Column(DateTime, default=None)
+    deleted_at = Column(DateTime, default=None)

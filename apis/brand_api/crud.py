@@ -98,7 +98,7 @@ def create_user(db: Session, user) -> dict[str, str]:
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    return db_user.user_data
+    return db_user
 
 
 def read_all_users(db: Session, skip: int = 0, limit: int = 100) -> list[dict[str, str]]:
