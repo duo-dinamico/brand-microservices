@@ -19,9 +19,9 @@ class Brands(Base):
     average_price = Column(String)
     rating = Column(Integer)
 
-    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"))
-    updated_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), default=None)
-    deleted_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), default=None)
+    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id", name="users_id"))
+    updated_by = Column(UUID(as_uuid=True), ForeignKey("users.id", name="users_id"), default=None)
+    deleted_by = Column(UUID(as_uuid=True), ForeignKey("users.id", name="users_id"), default=None)
 
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=None)
@@ -44,9 +44,9 @@ class Categories(Base):
     description = Column(String)
     price_per_category = Column(Enum(MyEnum))
 
-    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"))
-    updated_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), default=None)
-    deleted_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), default=None)
+    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id", name="users_id"))
+    updated_by = Column(UUID(as_uuid=True), ForeignKey("users.id", name="users_id"), default=None)
+    deleted_by = Column(UUID(as_uuid=True), ForeignKey("users.id", name="users_id"), default=None)
 
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=None)
@@ -60,8 +60,8 @@ class Users(Base):
     email = Column(String, unique=True)
     password = Column(String)
 
-    updated_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), default=None)
-    deleted_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), default=None)
+    updated_by = Column(UUID(as_uuid=True), ForeignKey("users.id", name="users_id"), default=None)
+    deleted_by = Column(UUID(as_uuid=True), ForeignKey("users.id", name="users_id"), default=None)
 
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=None)
