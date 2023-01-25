@@ -68,8 +68,9 @@ class Users(Base):
     updated_at = Column(DateTime, default=None)
     deleted_at = Column(DateTime, default=None)
 
-    # @validates("updated_by")
-    # def validate_user_id_exists(self, id):
-    #     print("UUUUUUUUUUUUUUUUU", Users.query().all())
-    #     assert Users.query().all()
-    #     return id
+    @validates("updated_by")
+    def validate_user_id_exists(self, key, id):
+        print("UUUUUUUUUUUUUUUUU", Users.query.filter(Users.id == id).first())
+        if not Users.query.filter(Users.id == id).first():
+            raise AssertionError("Updated_by user don't exist")
+        return id
