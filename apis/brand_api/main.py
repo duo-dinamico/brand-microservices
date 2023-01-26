@@ -189,11 +189,13 @@ def delete_user(user_id: UUID = Path(title="The id of the user to delete"), db: 
 
 @app.post("/signup", summary="Create new user", response_model=UserOut, status_code=201, tags=["Users"])
 def post_user(data: UserAuth, db: Session = Depends(get_db)):
-    user = read_user(db, param={"email": data.email})
-    if user is not None:
+    user_check = read_user(db, param={"email": data.email})
+    if user_check is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User with this email already exist")
     user = {"email": data.email, "password": get_hashed_password(data.password)}
-    return create_user(db, user)
+    user_created = create_user(db, user)
+    # return {"id": user_created.id, "email": user_created.email}
+    return user_created.__dict__
 
 
 @app.post("/login", summary="Create access and refresh tokens for user", response_model=TokenSchema, tags=["Users"])

@@ -48,4 +48,4 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(reuseab
             detail="Could not find user",
         )
 
-    return SystemUser(**user.user_data)
+    return SystemUser(**user.__dict__)

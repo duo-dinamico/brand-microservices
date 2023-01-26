@@ -1,6 +1,6 @@
 # Prioridades
 
-- [ ] Routes para patch de ~~brand~~, user e ~~categories~~
+- [x] Routes para patch de ~~brand~~, ~~user~~ e ~~categories~~
 - [x] Routes para delete de ~~brand~~, ~~user~~ e ~~categories~~
 - [ ] Conftest que cria categorias, brands e users devia retornar o que cria para usar em testes que precisam de um atributo
 - [ ] Mudar modelos para adicionar created at, created by, updated at, updated by, deleted at, deleted by
