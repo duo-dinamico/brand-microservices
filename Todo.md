@@ -5,6 +5,8 @@
 - ~~[ ] Conftest que cria categorias, brands e users devia retornar o que cria para usar em testes que precisam de um atributo~~
 - [x] Mudar modelos para adicionar created at, created by, updated at, updated by, deleted at, deleted by
 - [x] Mudar secrets para github secrets
+- [x] Antes de correr qualquer docker, fazer down primeiro no Makefile
+- [ ] Complementar as routes preenchendo os timestamps e ownerships
 - [ ] Adicionar mais testes e testar a validacao
 
 # Tidyup
@@ -13,7 +15,6 @@
 - [ ] Refazer o README
 - [ ] Criar o contributing guide
 - [ ] Discutir uma maneira de manter os packages actualizados
-- [ ] Antes de correr qualquer docker, fazer down primeiro no Makefile
 - [ ] Criar utilizador para o docker nao criar pastas com root
 - [ ] Melhorar validacao de pydantic
 

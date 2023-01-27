@@ -10,10 +10,10 @@ targets: help
 
 docker-compose := docker compose
 
-up: ## Run the application
+up: down ## Run the application
 	ENVIRONMENT=development $(docker-compose) up --build brand_api
 
-build: ## Build the docker image
+build: down ## Build the docker image
 	ENVIRONMENT=development $(docker-compose) build
 
 buildci: ## Build the ci image
@@ -24,10 +24,10 @@ down: ## Stop the application
 
 test: utest itest  ## Run unit and integration tests
 
-utest: ## Run unit tests
+utest: down ## Run unit tests
 	ENVIRONMENT=test $(docker-compose) run --rm unit pytest-watch ./apis/brand_api/tests
 
-itest: ## Run integration tests
+itest: down ## Run integration tests
 	ENVIRONMENT=test $(docker-compose) run --rm integration pytest-watch ./apis/brand_api/tests
 
 citest: ## Run ci tests
