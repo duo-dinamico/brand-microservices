@@ -1,12 +1,14 @@
 # brand-microservices
 
-pyenv install 3.11.0
-pyenv global 3.11.0
+To run this project you will need a **_.env_** file in the root so that docker can access the following environment variables:
 
-pipenv install
+```bash
+JWT_SECRET_KEY=password
+```
 
-Run:
-pipenv run start
+```bash
+JWT_REFRESH_SECRET_KEY=password
+```
 
 ## License
 
