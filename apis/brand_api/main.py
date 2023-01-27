@@ -31,6 +31,7 @@ from .schemas import (
     BrandsResponse,
     CategoriesBaseOptionalBody,
     CategoriesResponse,
+    SystemUser,
     TokenSchema,
     UserAuth,
     UserOut,
@@ -119,10 +120,14 @@ def delete_brand(brand_id: UUID = Path(title="The id of the brand to delete"), d
     summary="Create new category",
     response_model=CategoriesResponse,
     status_code=201,
-    dependencies=[Depends(get_current_user)],
     tags=["Categories"],
 )
-def post_category(data: CategoriesBaseOptionalBody, db: Session = Depends(get_db)):
+def post_category(
+    data: CategoriesBaseOptionalBody,
+    db: Session = Depends(get_db),
+    current_user: SystemUser = Depends(get_current_user),
+):
+    setattr(data, "created_by", current_user.id)
     category_name = read_category(db, param={"name": data.name})
     if category_name is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Category with this name already exists")
@@ -223,11 +228,3 @@ def post_login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Sessio
 def get_all_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = read_all_users(db, skip=skip, limit=limit)
     return users
-
-
-# @app.get("/users/me", response_model=schemas.User)
-# def read_user(user_id: int, db: Session = Depends(get_db)):
-#     db_user = crud.get_user(db, user_id=user_id)
-#     if db_user is None:
-#         raise HTTPException(status_code=404, detail="User not found")
-#     return db_user

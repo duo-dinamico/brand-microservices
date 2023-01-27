@@ -32,8 +32,11 @@ def token_generator(create_valid_user):
 
 
 @pytest.fixture
-def create_valid_category(db_session):
-    db_session.add(Categories(name="catValidName", description="validCatDesc", price_per_category="two"))
+def create_valid_category(db_session, create_valid_user):
+    user_id = db_session.query(Users).first().id
+    db_session.add(
+        Categories(name="catValidName", description="validCatDesc", price_per_category="two", created_by=user_id)
+    )
     db_session.commit()
 
 

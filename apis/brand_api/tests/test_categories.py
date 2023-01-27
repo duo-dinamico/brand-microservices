@@ -24,6 +24,7 @@ def test_success_categories_create(db_session, token_generator):
         },
     )
     assert response.status_code == 201
+    assert response.json()["created_by"] != None
 
 
 @pytest.mark.unit
@@ -31,6 +32,7 @@ def test_success_categories_read(token_generator, create_valid_category):
     response = client.get("/categories", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 200
     assert len(response.json()) >= 1
+    assert response.json()[0]["created_by"] != None
 
 
 @pytest.mark.unit
