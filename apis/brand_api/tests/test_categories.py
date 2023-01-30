@@ -1,10 +1,12 @@
 import uuid
+from datetime import datetime
 
 import pytest
 from fastapi.testclient import TestClient
 
 from ..db.models import Categories
 from ..main import app
+from .conftest import validate_timestamp
 
 client = TestClient(app)
 
@@ -25,6 +27,9 @@ def test_success_categories_create(db_session, token_generator):
     )
     assert response.status_code == 201
     assert response.json()["created_by"] != None
+    assert validate_timestamp(response.json()["created_at"])
+    assert response.json()["updated_by"] == None
+    assert response.json()["updated_at"] == None
 
 
 @pytest.mark.unit
@@ -32,7 +37,11 @@ def test_success_categories_read(token_generator, create_valid_category):
     response = client.get("/categories", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 200
     assert len(response.json()) >= 1
-    assert response.json()[0]["created_by"] != None
+    for res in response.json():
+        assert validate_timestamp(res["created_at"])
+        assert res["created_by"] != None
+        assert res["updated_by"] == None
+        assert res["updated_at"] == None
 
 
 @pytest.mark.unit
@@ -45,6 +54,10 @@ def test_success_categories_update_name(db_session, token_generator, create_vali
     )
     assert response.status_code == 200
     assert response.json()["name"] == "updatedCategoryName"
+    assert response.json()["created_by"] != None
+    assert validate_timestamp(response.json()["created_at"])
+    assert response.json()["updated_by"] != None
+    assert validate_timestamp(response.json()["updated_at"])
 
 
 @pytest.mark.unit
@@ -57,6 +70,10 @@ def test_success_categories_update_description(db_session, token_generator, crea
     )
     assert response.status_code == 200
     assert response.json()["description"] == "updatedDescription"
+    assert response.json()["created_by"] != None
+    assert validate_timestamp(response.json()["created_at"])
+    assert response.json()["updated_by"] != None
+    assert validate_timestamp(response.json()["updated_at"])
 
 
 @pytest.mark.unit
@@ -69,6 +86,10 @@ def test_success_categories_update_price(db_session, token_generator, create_val
     )
     assert response.status_code == 200
     assert response.json()["price_per_category"] == 5
+    assert response.json()["created_by"] != None
+    assert validate_timestamp(response.json()["created_at"])
+    assert response.json()["updated_by"] != None
+    assert validate_timestamp(response.json()["updated_at"])
 
 
 @pytest.mark.unit

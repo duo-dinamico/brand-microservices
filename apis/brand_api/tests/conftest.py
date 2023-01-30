@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -54,3 +56,10 @@ def create_valid_brand(db_session, create_valid_category):
         )
     )
     db_session.commit()
+
+
+def validate_timestamp(data):
+    if isinstance(datetime.strptime(data, "%Y-%m-%yT%H:%M:%S.%f"), datetime):
+        return True
+    else:
+        return False

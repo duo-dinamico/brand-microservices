@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 from uuid import UUID
 
@@ -148,18 +149,20 @@ def get_all_categories(skip: int = 0, limit: int = 100, db: Session = Depends(ge
 @app.patch(
     "/categories/{category_id}",
     response_model=CategoriesResponse,
-    dependencies=[Depends(get_current_user)],
     tags=["Categories"],
 )
 def patch_category(
     data: CategoriesBaseOptionalBody,
     category_id: UUID = Path(title="The id of the category to update"),
     db: Session = Depends(get_db),
+    current_user: SystemUser = Depends(get_current_user),
 ):
     category = read_category(db, param={"id": category_id})
     if category is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
     update_data = data.dict(exclude_unset=True)
+    update_data["updated_at"] = datetime.now()
+    update_data["updated_by"] = current_user.id
     for key, value in update_data.items():
         setattr(category, key, value)
     return update_category(db, category)
