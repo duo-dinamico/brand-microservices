@@ -43,12 +43,12 @@ def crud_delete_brand(db: Session, brand: BrandsResponse) -> dict[str, bool]:
     return {"ok": True}
 
 
-def create_category(db: Session, category) -> Categories:
+def create_category(db: Session, category, user_id) -> Categories:
     db_category = Categories(
         name=category.name,
         description=category.description,
         price_per_category=category.price_per_category,
-        created_by=category.created_by,
+        created_by=user_id,
     )
     db.add(db_category)
     db.commit()

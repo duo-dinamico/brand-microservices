@@ -127,11 +127,10 @@ def post_category(
     db: Session = Depends(get_db),
     current_user: SystemUser = Depends(get_current_user),
 ):
-    setattr(data, "created_by", current_user.id)
     category_name = read_category(db, param={"name": data.name})
     if category_name is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Category with this name already exists")
-    return create_category(db, data)
+    return create_category(db, data, current_user.id)
 
 
 @app.get(
