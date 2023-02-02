@@ -94,7 +94,6 @@ class CategoriesBaseOptionalBody(BaseModel):
     name: str | None
     description: str | None
     price_per_category: MyEnum | None
-    created_by: UUID | None
 
     class Config:
         orm_mode = True
