@@ -8,6 +8,7 @@
 - [x] Antes de correr qualquer docker, fazer down primeiro no Makefile
 - [ ] Complementar as routes preenchendo os timestamps e ownerships de ~~categories~~, brands e users
 - [ ] Mudar respostas parea ser sempre um objecto com uma chave com uma lista (mesmo que seja só um)
+- [ ] Em criacao de brands, o id da categoria deve ser um parametero e nao estar no body
 
   ```python
       {"users": [
