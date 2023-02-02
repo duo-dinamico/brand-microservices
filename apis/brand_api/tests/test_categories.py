@@ -30,6 +30,8 @@ def test_success_categories_create(db_session, token_generator):
     assert validate_timestamp(response.json()["created_at"])
     assert response.json()["updated_by"] == None
     assert response.json()["updated_at"] == None
+    assert response.json()["deleted_by"] == None
+    assert response.json()["deleted_at"] == None
 
 
 @pytest.mark.unit
@@ -42,6 +44,15 @@ def test_success_categories_read(token_generator, create_valid_category):
         assert res["created_by"] != None
         assert res["updated_by"] == None
         assert res["updated_at"] == None
+        assert res["deleted_by"] == None
+        assert res["deleted_at"] == None
+
+
+@pytest.mark.unit
+def test_success_categories_read_non_deleted(token_generator, delete_category):
+    response = client.get("/categories", headers={"Authorization": "Bearer " + token_generator})
+    assert response.status_code == 200
+    assert len(response.json()) == 0
 
 
 @pytest.mark.unit
@@ -58,6 +69,8 @@ def test_success_categories_update_name(db_session, token_generator, create_vali
     assert validate_timestamp(response.json()["created_at"])
     assert response.json()["updated_by"] != None
     assert validate_timestamp(response.json()["updated_at"])
+    assert response.json()["deleted_by"] == None
+    assert response.json()["deleted_at"] == None
 
 
 @pytest.mark.unit
@@ -99,9 +112,12 @@ def test_success_categories_delete(db_session, token_generator, create_valid_cat
         f"/categories/{category_id}",
         headers={"Authorization": "Bearer " + token_generator},
     )
-    assert response.status_code == 204
-    category_deleted = db_session.query(Categories).all()
-    assert category_deleted == []
+    assert response.status_code == 200
+    assert response.json()["deleted_by"] != None
+    assert response.json()["deleted_at"] != None
+    assert validate_timestamp(response.json()["deleted_at"])
+    categories_list = db_session.query(Categories).all()
+    assert len(categories_list) > 0
 
 
 # ERROR HANDLING
@@ -184,3 +200,26 @@ def test_error_categories_post_existing_category_name(token_generator, create_va
     )
     assert response.status_code == 400
     assert response.json()["detail"] == "Category with this name already exists"
+
+
+@pytest.mark.unit
+def test_error_categories_patch_deleted_category(db_session, token_generator, delete_category):
+    category_id = db_session.query(Categories).first().id
+    response = client.patch(
+        f"/categories/{category_id}",
+        headers={"Authorization": "Bearer " + token_generator},
+        json={"name": "updatedCategoryName"},
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Category not found"
+
+
+@pytest.mark.unit
+def test_error_categories_delete_deleted_category(db_session, token_generator, delete_category):
+    category_id = db_session.query(Categories).first().id
+    response = client.delete(
+        f"/categories/{category_id}",
+        headers={"Authorization": "Bearer " + token_generator},
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Category not found"

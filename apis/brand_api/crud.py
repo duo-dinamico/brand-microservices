@@ -57,12 +57,16 @@ def create_category(db: Session, category) -> Categories:
 
 
 def read_all_categories(db: Session, skip: int = 0, limit: int = 100) -> list[Categories]:
-    return db.query(Categories).offset(skip).limit(limit).all()
+    return db.query(Categories).filter(Categories.deleted_at == None).offset(skip).limit(limit).all()
 
 
 def read_category(db: Session, param) -> Categories:
     filtering_param = list(param.keys())[0]
-    return db.query(Categories).filter(getattr(Categories, filtering_param, None) == param.get(filtering_param)).first()
+    return (
+        db.query(Categories)
+        .filter(getattr(Categories, filtering_param, None) == param.get(filtering_param), Categories.deleted_at == None)
+        .first()
+    )
 
 
 def update_category(db: Session, category) -> Categories:
@@ -70,12 +74,6 @@ def update_category(db: Session, category) -> Categories:
     db.commit()
     db.refresh(category)
     return category
-
-
-def crud_delete_category(db: Session, category) -> dict[str, bool]:
-    db.delete(category)
-    db.commit()
-    return {"ok": True}
 
 
 def update_user(db: Session, user) -> dict[str, bool]:

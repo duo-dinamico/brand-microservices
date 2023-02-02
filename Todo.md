@@ -6,7 +6,7 @@
 - [x] Mudar modelos para adicionar created at, created by, updated at, updated by, deleted at, deleted by
 - [x] Mudar secrets para github secrets
 - [x] Antes de correr qualquer docker, fazer down primeiro no Makefile
-- [ ] Complementar as routes preenchendo os timestamps e ownerships ( DONE Categories: created_at, updated_at, created_by, updated_by)
+- [ ] Complementar as routes preenchendo os timestamps e ownerships de ~~categories~~, brands e users
 - [ ] Mudar respostas parea ser sempre um objecto com uma chave com uma lista (mesmo que seja só um)
 
   ```python
@@ -18,6 +18,7 @@
   ```
 
 - [ ] Adicionar mais testes e testar a validacao
+- [ ] Adicionar query show_deleted
 
 # Tidyup
 

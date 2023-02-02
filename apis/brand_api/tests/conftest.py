@@ -58,6 +58,12 @@ def create_valid_brand(db_session, create_valid_category):
     db_session.commit()
 
 
+@pytest.fixture
+def delete_category(db_session, create_valid_category, token_generator):
+    category_id = db_session.query(Categories).first().id
+    return client.delete(f"/categories/{category_id}", headers={"Authorization": "Bearer " + token_generator})
+
+
 def validate_timestamp(data):
     if isinstance(datetime.strptime(data, "%Y-%m-%yT%H:%M:%S.%f"), datetime):
         return True
