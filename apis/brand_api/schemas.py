@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, Extra, Field
@@ -71,6 +72,12 @@ class CategoriesBase(BaseModel):
     name: str
     description: str
     price_per_category: MyEnum
+    created_at: datetime
+    created_by: UUID
+    updated_at: datetime | None
+    updated_by: UUID | None
+    deleted_at: datetime | None
+    deleted_by: UUID | None
 
     class Config:
         orm_mode = True

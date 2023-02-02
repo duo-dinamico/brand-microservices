@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 from uuid import UUID
 
@@ -10,7 +11,6 @@ from .crud import (
     create_category,
     create_user,
     crud_delete_brand,
-    crud_delete_category,
     crud_delete_user,
     read_all_brands,
     read_all_categories,
@@ -31,6 +31,7 @@ from .schemas import (
     BrandsResponse,
     CategoriesBaseOptionalBody,
     CategoriesResponse,
+    SystemUser,
     TokenSchema,
     UserAuth,
     UserOut,
@@ -119,14 +120,17 @@ def delete_brand(brand_id: UUID = Path(title="The id of the brand to delete"), d
     summary="Create new category",
     response_model=CategoriesResponse,
     status_code=201,
-    dependencies=[Depends(get_current_user)],
     tags=["Categories"],
 )
-def post_category(data: CategoriesBaseOptionalBody, db: Session = Depends(get_db)):
+def post_category(
+    data: CategoriesBaseOptionalBody,
+    db: Session = Depends(get_db),
+    current_user: SystemUser = Depends(get_current_user),
+):
     category_name = read_category(db, param={"name": data.name})
     if category_name is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Category with this name already exists")
-    return create_category(db, data)
+    return create_category(db, data, current_user.id)
 
 
 @app.get(
@@ -143,29 +147,38 @@ def get_all_categories(skip: int = 0, limit: int = 100, db: Session = Depends(ge
 @app.patch(
     "/categories/{category_id}",
     response_model=CategoriesResponse,
-    dependencies=[Depends(get_current_user)],
     tags=["Categories"],
 )
 def patch_category(
     data: CategoriesBaseOptionalBody,
     category_id: UUID = Path(title="The id of the category to update"),
     db: Session = Depends(get_db),
+    current_user: SystemUser = Depends(get_current_user),
 ):
     category = read_category(db, param={"id": category_id})
     if category is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
     update_data = data.dict(exclude_unset=True)
+    update_data["updated_at"] = datetime.now()
+    update_data["updated_by"] = current_user.id
     for key, value in update_data.items():
         setattr(category, key, value)
     return update_category(db, category)
 
 
-@app.delete("/categories/{category_id}", dependencies=[Depends(get_current_user)], tags=["Categories"], status_code=204)
-def delete_category(category_id: UUID = Path(title="The id of the category to delete"), db: Session = Depends(get_db)):
+@app.delete("/categories/{category_id}", tags=["Categories"])
+def delete_category(
+    category_id: UUID = Path(title="The id of the category to delete"),
+    db: Session = Depends(get_db),
+    current_user: SystemUser = Depends(get_current_user),
+):
     category = read_category(db, param={"id": category_id})
     if category is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
-    return crud_delete_category(db, category)
+    deleted_dict = {"deleted_at": datetime.now(), "deleted_by": current_user.id}
+    for key, value in deleted_dict.items():
+        setattr(category, key, value)
+    return update_category(db, category)
 
 
 @app.patch("/users/{user_id}", dependencies=[Depends(get_current_user)], tags=["Users"])
@@ -223,11 +236,3 @@ def post_login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Sessio
 def get_all_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = read_all_users(db, skip=skip, limit=limit)
     return users
-
-
-# @app.get("/users/me", response_model=schemas.User)
-# def read_user(user_id: int, db: Session = Depends(get_db)):
-#     db_user = crud.get_user(db, user_id=user_id)
-#     if db_user is None:
-#         raise HTTPException(status_code=404, detail="User not found")
-#     return db_user
