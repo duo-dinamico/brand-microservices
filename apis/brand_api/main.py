@@ -10,7 +10,6 @@ from .crud import (
     create_brand,
     create_category,
     create_user,
-    crud_delete_brand,
     crud_delete_user,
     read_all_brands,
     read_all_categories,
@@ -42,7 +41,7 @@ from .utils.tokens import create_access_token, create_refresh_token
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(title="Brands API", version="0.1.0")
 
 
 # Dependency
@@ -54,7 +53,7 @@ def get_db():
         db.close()
 
 
-@app.get("/", status_code=405)
+@app.get("/", status_code=405, include_in_schema=False)
 def read_root():
     pass
 
@@ -64,40 +63,41 @@ def read_root():
     summary="Create new brand",
     response_model=BrandsResponse,
     status_code=201,
-    dependencies=[Depends(get_current_user)],
     tags=["Brands"],
 )
 def post_brand(
     data: BrandsBase,
     db: Session = Depends(get_db),
+    current_user: SystemUser = Depends(get_current_user),
 ):
+    # TODO: Can we make these two only go to the DB once instead of twice?
     brand_name = read_brand(db, param={"name": data.name})
-    brand_website = read_brand(db, param={"website": data.website})
     if brand_name is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Brand with this name already exists")
+    brand_website = read_brand(db, param={"website": data.website})
     if brand_website is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Brand with this website already exists")
-    return create_brand(db, data)
+    return create_brand(db, data, current_user.id)
 
 
 @app.get("/brands", response_model=List[BrandsResponse], dependencies=[Depends(get_current_user)], tags=["Brands"])
 def get_all_brands(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    brands = read_all_brands(db, skip=skip, limit=limit)
-    return brands
+    return read_all_brands(db, skip=skip, limit=limit)
 
 
-@app.patch(
-    "/brands/{brand_id}", response_model=BrandsResponse, dependencies=[Depends(get_current_user)], tags=["Brands"]
-)
+@app.patch("/brands/{brand_id}", response_model=BrandsResponse, tags=["Brands"])
 def patch_brand(
     data: BrandsBaseOptionalBody,
     brand_id: UUID = Path(title="The id of the brand to update"),
     db: Session = Depends(get_db),
+    current_user: SystemUser = Depends(get_current_user),
 ):
     brand = read_brand(db, param={"id": brand_id})
     if brand is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Brand not found")
     update_data = data.dict(exclude_unset=True)
+    update_data["updated_at"] = datetime.now()
+    update_data["updated_by"] = current_user.id
     for key, value in update_data.items():
         if key == "category_id":
             category = read_category(db, param={"id": value})
@@ -107,12 +107,19 @@ def patch_brand(
     return update_brand(db, brand)
 
 
-@app.delete("/brands/{brand_id}", dependencies=[Depends(get_current_user)], tags=["Brands"], status_code=204)
-def delete_brand(brand_id: UUID = Path(title="The id of the brand to delete"), db: Session = Depends(get_db)):
+@app.delete("/brands/{brand_id}", tags=["Brands"])
+def delete_brand(
+    brand_id: UUID = Path(title="The id of the brand to delete"),
+    db: Session = Depends(get_db),
+    current_user: SystemUser = Depends(get_current_user),
+):
     brand = read_brand(db, param={"id": brand_id})
     if brand is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Brand not found")
-    return crud_delete_brand(db, brand)
+    deleted_dict = {"deleted_at": datetime.now(), "deleted_by": current_user.id}
+    for key, value in deleted_dict.items():
+        setattr(brand, key, value)
+    return update_brand(db, brand)
 
 
 @app.post(
@@ -140,8 +147,7 @@ def post_category(
     tags=["Categories"],
 )
 def get_all_categories(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    categories = read_all_categories(db, skip=skip, limit=limit)
-    return categories
+    return read_all_categories(db, skip=skip, limit=limit)
 
 
 @app.patch(

@@ -20,6 +20,12 @@ class BrandsBase(BaseModel):
 
 class BrandsResponse(BrandsBase):
     id: UUID
+    created_at: datetime
+    created_by: UUID
+    updated_at: datetime | None
+    updated_by: UUID | None
+    deleted_at: datetime | None
+    deleted_by: UUID | None
 
     class Config:
         orm_mode = True
