@@ -6,7 +6,7 @@ from .db.models import Brands, Categories, Users
 from .schemas import BrandsBase, BrandsResponse
 
 
-def create_brand(db: Session, brand: BrandsBase) -> Brands:
+def create_brand(db: Session, brand: BrandsBase, user_id) -> Brands:
     db_brand = Brands(
         name=brand.name,
         website=brand.website,
@@ -14,6 +14,7 @@ def create_brand(db: Session, brand: BrandsBase) -> Brands:
         category_id=brand.category_id,
         average_price=brand.average_price,
         rating=brand.rating,
+        created_by=user_id,
     )
     db.add(db_brand)
     db.commit()
@@ -23,11 +24,15 @@ def create_brand(db: Session, brand: BrandsBase) -> Brands:
 
 def read_brand(db: Session, param: dict[str, str | UUID]) -> Brands:
     filtering_param = list(param.keys())[0]
-    return db.query(Brands).filter(getattr(Brands, filtering_param, None) == param.get(filtering_param)).first()
+    return (
+        db.query(Brands)
+        .filter(getattr(Brands, filtering_param, None) == param.get(filtering_param), Brands.deleted_at == None)
+        .first()
+    )
 
 
 def read_all_brands(db: Session, skip: int = 0, limit: int = 100) -> list[Brands]:
-    return db.query(Brands).offset(skip).limit(limit).all()
+    return db.query(Brands).filter(Brands.deleted_at == None).offset(skip).limit(limit).all()
 
 
 def update_brand(db: Session, brand) -> Brands:
@@ -35,12 +40,6 @@ def update_brand(db: Session, brand) -> Brands:
     db.commit()
     db.refresh(brand)
     return brand
-
-
-def crud_delete_brand(db: Session, brand: BrandsResponse) -> dict[str, bool]:
-    db.delete(brand)
-    db.commit()
-    return {"ok": True}
 
 
 def create_category(db: Session, category, user_id) -> Categories:

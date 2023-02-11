@@ -45,6 +45,7 @@ def create_valid_category(db_session, create_valid_user):
 @pytest.fixture
 def create_valid_brand(db_session, create_valid_category):
     category_id = db_session.query(Categories).first().id
+    user_id = db_session.query(Users).first().id
     db_session.add(
         Brands(
             name="validBrandName",
@@ -53,6 +54,7 @@ def create_valid_brand(db_session, create_valid_category):
             description="Desc",
             average_price="10€",
             rating=5,
+            created_by=user_id,
         )
     )
     db_session.commit()
@@ -62,6 +64,12 @@ def create_valid_brand(db_session, create_valid_category):
 def delete_category(db_session, create_valid_category, token_generator):
     category_id = db_session.query(Categories).first().id
     return client.delete(f"/categories/{category_id}", headers={"Authorization": "Bearer " + token_generator})
+
+
+@pytest.fixture
+def delete_brand(db_session, create_valid_brand, token_generator):
+    brand_id = db_session.query(Brands).first().id
+    return client.delete(f"/brands/{brand_id}", headers={"Authorization": "Bearer " + token_generator})
 
 
 def validate_timestamp(data):
