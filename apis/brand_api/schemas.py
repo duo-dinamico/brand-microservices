@@ -46,6 +46,11 @@ class BrandsBaseOptionalBody(BaseModel):
 class UserOut(BaseModel):
     id: UUID
     email: str
+    created_at: datetime
+    updated_at: datetime | None
+    updated_by: UUID | None
+    deleted_at: datetime | None
+    deleted_by: UUID | None
 
 
 class UserAuth(BaseModel):
