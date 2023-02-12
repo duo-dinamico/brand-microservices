@@ -5,8 +5,7 @@ from fastapi.testclient import TestClient
 
 from ..db.models import Categories
 from ..main import app
-
-# from .conftest import validate_timestamp
+from .conftest import validate_timestamp_and_ownership
 
 client = TestClient(app)
 
@@ -26,33 +25,23 @@ def test_success_categories_create(db_session, token_generator):
         },
     )
     assert response.status_code == 201
-    assert response.json()["created_by"] != None
-    # assert validate_timestamp(response.json()["created_at"])
-    assert response.json()["updated_by"] == None
-    assert response.json()["updated_at"] == None
-    assert response.json()["deleted_by"] == None
-    assert response.json()["deleted_at"] == None
+    assert len(response.json()["categories"]) >= 1
+    validate_timestamp_and_ownership(response.json()["categories"], "post")
 
 
 @pytest.mark.unit
 def test_success_categories_read(token_generator, create_valid_category):
     response = client.get("/categories", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 200
-    assert len(response.json()) >= 1
-    for res in response.json():
-        # assert validate_timestamp(res["created_at"])
-        assert res["created_by"] != None
-        assert res["updated_by"] == None
-        assert res["updated_at"] == None
-        assert res["deleted_by"] == None
-        assert res["deleted_at"] == None
+    assert len(response.json()["categories"]) >= 1
+    validate_timestamp_and_ownership(response.json()["categories"], "get")
 
 
 @pytest.mark.unit
 def test_success_categories_read_non_deleted(token_generator, delete_category):
     response = client.get("/categories", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 200
-    assert len(response.json()) == 0
+    assert len(response.json()["categories"]) == 0
 
 
 @pytest.mark.unit
@@ -64,13 +53,9 @@ def test_success_categories_update_name(db_session, token_generator, create_vali
         json={"name": "updatedCategoryName"},
     )
     assert response.status_code == 200
-    assert response.json()["name"] == "updatedCategoryName"
-    assert response.json()["created_by"] != None
-    # assert validate_timestamp(response.json()["created_at"])
-    assert response.json()["updated_by"] != None
-    # assert validate_timestamp(response.json()["updated_at"])
-    assert response.json()["deleted_by"] == None
-    assert response.json()["deleted_at"] == None
+    for res in response.json()["categories"]:
+        assert res["name"] == "updatedCategoryName"
+    validate_timestamp_and_ownership(response.json()["categories"], "patch")
 
 
 @pytest.mark.unit
@@ -82,11 +67,9 @@ def test_success_categories_update_description(db_session, token_generator, crea
         json={"description": "updatedDescription"},
     )
     assert response.status_code == 200
-    assert response.json()["description"] == "updatedDescription"
-    assert response.json()["created_by"] != None
-    # assert validate_timestamp(response.json()["created_at"])
-    assert response.json()["updated_by"] != None
-    # assert validate_timestamp(response.json()["updated_at"])
+    for res in response.json()["categories"]:
+        assert res["description"] == "updatedDescription"
+    validate_timestamp_and_ownership(response.json()["categories"], "patch")
 
 
 @pytest.mark.unit
@@ -98,11 +81,9 @@ def test_success_categories_update_price(db_session, token_generator, create_val
         json={"price_per_category": 5},
     )
     assert response.status_code == 200
-    assert response.json()["price_per_category"] == 5
-    assert response.json()["created_by"] != None
-    # assert validate_timestamp(response.json()["created_at"])
-    assert response.json()["updated_by"] != None
-    # assert validate_timestamp(response.json()["updated_at"])
+    for res in response.json()["categories"]:
+        assert res["price_per_category"] == 5
+    validate_timestamp_and_ownership(response.json()["categories"], "patch")
 
 
 @pytest.mark.unit
@@ -113,9 +94,7 @@ def test_success_categories_delete(db_session, token_generator, create_valid_cat
         headers={"Authorization": "Bearer " + token_generator},
     )
     assert response.status_code == 200
-    assert response.json()["deleted_by"] != None
-    assert response.json()["deleted_at"] != None
-    # assert validate_timestamp(response.json()["deleted_at"])
+    validate_timestamp_and_ownership(response.json()["categories"], "delete")
     categories_list = db_session.query(Categories).all()
     assert len(categories_list) > 0
 
