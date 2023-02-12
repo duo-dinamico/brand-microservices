@@ -1,4 +1,4 @@
-import re
+from re import search
 from uuid import uuid4
 
 import pytest
@@ -28,7 +28,7 @@ def test_success_user_creation(db_session):
     response = client.post("/signup", json={"email": "newemail@gmail.com", "password": "newpassword"})
     assert response.status_code == 201
     assert response.json()["email"] == "newemail@gmail.com"
-    assert bool(re.search(pattern, response.json()["id"])) == True
+    assert bool(search(pattern, response.json()["id"])) == True
 
 
 @pytest.mark.unit

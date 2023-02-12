@@ -3,7 +3,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 
 from .db.models import Brands, Categories, Users
-from .schemas import BrandsBase, BrandsResponse
+from .schemas import BrandsBase
 
 
 def create_brand(db: Session, brand: BrandsBase, user_id) -> Brands:

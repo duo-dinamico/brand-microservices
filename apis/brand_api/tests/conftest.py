@@ -1,4 +1,4 @@
-from datetime import datetime
+from re import search
 
 import pytest
 from fastapi.testclient import TestClient
@@ -72,8 +72,43 @@ def delete_brand(db_session, create_valid_brand, token_generator):
     return client.delete(f"/brands/{brand_id}", headers={"Authorization": "Bearer " + token_generator})
 
 
-def validate_timestamp(data):
-    if isinstance(datetime.strptime(data, "%Y-%m-%yT%H:%M:%S.%f"), datetime):
-        return True
-    else:
-        return False
+# TODO: Validation should probably become a class with these two as methods inside to check everything in one go
+def validate_timestamp(data, method):
+    pattern = "^[0-9]{4}-[0-1]{1}[0-9]{1}-[0-3]{1}[0-9]{1}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}$"
+    for key, value in data.items():
+        if key == "created_at":
+            assert value != None
+        if key == "updated_at":
+            if method == "post" or method == "get" or method == "delete":
+                assert value == None
+            else:
+                assert bool(search(pattern, value)) == True
+                assert value != None
+        if key == "deleted_at":
+            if method == "post" or method == "get" or method == "patch":
+                assert value == None
+            else:
+                assert bool(search(pattern, value)) == True
+                assert value != None
+
+
+def validate_ownership(data, method):
+    for key, value in data.items():
+        if key == "created_by":
+            assert value != None
+        if key == "updated_by":
+            if method == "post" or method == "get" or method == "delete":
+                assert value == None
+            else:
+                assert value != None
+        if key == "deleted_by":
+            if method == "post" or method == "get" or method == "patch":
+                assert value == None
+            else:
+                assert value != None
+
+
+def validate_timestamp_and_ownership(data, method):
+    for res in data:
+        validate_timestamp(res, method)
+        validate_ownership(res, method)
