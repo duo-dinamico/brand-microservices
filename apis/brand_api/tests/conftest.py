@@ -72,6 +72,12 @@ def delete_brand(db_session, create_valid_brand, token_generator):
     return client.delete(f"/brands/{brand_id}", headers={"Authorization": "Bearer " + token_generator})
 
 
+@pytest.fixture
+def delete_user(db_session, create_valid_user, token_generator):
+    user_id = db_session.query(Users).first().id
+    return client.delete(f"/users/{user_id}", headers={"Authorization": "Bearer " + token_generator})
+
+
 def validate_timestamp(data):
     if isinstance(datetime.strptime(data, "%Y-%m-%yT%H:%M:%S.%f"), datetime):
         return True

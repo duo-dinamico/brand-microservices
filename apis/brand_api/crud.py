@@ -1,9 +1,10 @@
+from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy.orm import Session
 
 from .db.models import Brands, Categories, Users
-from .schemas import BrandsBase, BrandsResponse
+from .schemas import BrandsBase
 
 
 def create_brand(db: Session, brand: BrandsBase, user_id) -> Brands:
@@ -79,27 +80,56 @@ def update_user(db: Session, user) -> dict[str, bool]:
     db.add(user)
     db.commit()
     db.refresh(user)
-    return {"ok": True}
-
-
-def crud_delete_user(db: Session, user) -> dict[str, bool]:
-    db.delete(user)
-    db.commit()
-    return {"ok": True}
+    return (
+        db.query(
+            Users.id,
+            Users.email,
+            Users.created_at,
+            Users.updated_by,
+            Users.updated_at,
+            Users.deleted_by,
+            Users.deleted_at,
+        )
+        .filter(Users.id == user.id)
+        .first()
+    )
 
 
 def read_user(db: Session, param) -> Users:
     filtering_param = list(param.keys())[0]
-    return db.query(Users).filter(getattr(Users, filtering_param, None) == param.get(filtering_param)).first()
+    return (
+        db.query(Users)
+        .filter(getattr(Users, filtering_param, None) == param.get(filtering_param), Users.deleted_at == None)
+        .first()
+    )
 
 
 def create_user(db: Session, user) -> dict[str, str]:
-    db_user = Users(email=user["email"], password=user["password"])
+    db_user = Users(email=user["email"], password=user["password"], created_at=datetime.now())
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    return db_user
+    # TODO: This kind of return should probably be it's own CRUD function
+    return (
+        db.query(
+            Users.id,
+            Users.email,
+            Users.created_at,
+            Users.updated_by,
+            Users.updated_at,
+            Users.deleted_by,
+            Users.deleted_at,
+        )
+        .filter(Users.id == db_user.id)
+        .first()
+    )
 
 
 def read_all_users(db: Session, skip: int = 0, limit: int = 100) -> list[dict[str, str]]:
-    return db.query(Users.id, Users.email).offset(skip).limit(limit).all()
+    return (
+        db.query(Users.id, Users.email, Users.created_at)
+        .filter(Users.deleted_at == None)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
