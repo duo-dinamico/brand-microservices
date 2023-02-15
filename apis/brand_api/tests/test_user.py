@@ -72,6 +72,18 @@ def test_success_user_patch(db_session, token_generator, create_valid_user) -> N
     validate_timestamp_and_ownership(response.json()["users"], "patch")
 
 
+@pytest.mark.unit
+def test_success_user_read_deleted(token_generator, delete_user):
+    response = client.get(
+        "/users", params={"show_deleted": True}, headers={"Authorization": "Bearer " + token_generator}
+    )
+    assert response.status_code == 200
+    assert len(response.json()["users"]) >= 1
+    for res in response.json()["users"]:
+        assert res["deleted_at"] != None
+        assert res["deleted_by"] != None
+
+
 # ERROR HANDLING
 @pytest.mark.unit
 def test_error_method_not_allowed_users():

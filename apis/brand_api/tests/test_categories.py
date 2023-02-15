@@ -99,6 +99,18 @@ def test_success_categories_delete(db_session, token_generator, create_valid_cat
     assert len(categories_list) > 0
 
 
+@pytest.mark.unit
+def test_success_categories_read_deleted(token_generator, delete_category):
+    response = client.get(
+        "/categories", params={"show_deleted": True}, headers={"Authorization": "Bearer " + token_generator}
+    )
+    assert response.status_code == 200
+    assert len(response.json()["categories"]) >= 1
+    for res in response.json()["categories"]:
+        assert res["deleted_at"] != None
+        assert res["deleted_by"] != None
+
+
 # ERROR HANDLING
 @pytest.mark.unit
 def test_error_method_not_allowed_categories():

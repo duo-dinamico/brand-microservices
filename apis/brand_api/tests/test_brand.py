@@ -89,6 +89,18 @@ def test_success_brand_delete(db_session, token_generator, create_valid_brand):
     assert len(brands_list) > 0
 
 
+@pytest.mark.unit
+def test_success_brands_read_deleted(token_generator, delete_brand):
+    response = client.get(
+        "/brands", params={"show_deleted": True}, headers={"Authorization": "Bearer " + token_generator}
+    )
+    assert response.status_code == 200
+    assert len(response.json()["brands"]) >= 1
+    for res in response.json()["brands"]:
+        assert res["deleted_at"] != None
+        assert res["deleted_by"] != None
+
+
 # ERROR HANDLING
 @pytest.mark.unit
 def test_error_method_brand_not_allowed():
