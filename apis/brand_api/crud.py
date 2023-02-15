@@ -127,7 +127,15 @@ def create_user(db: Session, user) -> dict[str, str]:
 
 def read_all_users(db: Session, skip: int = 0, limit: int = 100) -> list[dict[str, str]]:
     return (
-        db.query(Users.id, Users.email, Users.created_at)
+        db.query(
+            Users.id,
+            Users.email,
+            Users.created_at,
+            Users.updated_by,
+            Users.updated_at,
+            Users.deleted_by,
+            Users.deleted_at,
+        )
         .filter(Users.deleted_at == None)
         .offset(skip)
         .limit(limit)

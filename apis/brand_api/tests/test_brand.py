@@ -147,3 +147,22 @@ def test_error_brands_delete_deleted_brand(db_session, token_generator, delete_b
     )
     assert response.status_code == 404
     assert response.json()["detail"] == "Brand not found"
+
+
+@pytest.mark.unit
+def test_error_create_brand_category_must_exist(db_session, token_generator, create_valid_brand):
+    random_category_id = uuid4()
+    response = client.post(
+        f"/brands",
+        headers={"Authorization": "Bearer " + token_generator},
+        json={
+            "name": "validBrandName",
+            "website": "www.validsite.pt",
+            "category_id": str(random_category_id),
+            "description": "Desc",
+            "average_price": "10€",
+            "rating": 5,
+        },
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Category must exist"
