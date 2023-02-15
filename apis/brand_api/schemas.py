@@ -106,6 +106,10 @@ class CategoriesResponse(CategoriesBase):
         orm_mode = True
 
 
+class ListOfCategories(BaseModel):
+    categories: List[CategoriesResponse]
+
+
 class CategoriesBaseOptionalBody(BaseModel):
     name: str | None
     description: str | None
