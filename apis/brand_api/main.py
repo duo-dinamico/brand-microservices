@@ -29,10 +29,10 @@ from .schemas import (
     CategoriesBaseOptionalBody,
     ListOfBrands,
     ListOfCategories,
+    ListOfUsers,
     SystemUser,
     TokenSchema,
     UserAuth,
-    UserOut,
     UserPasswordUpdate,
 )
 from .utils.password_hash import get_hashed_password, verify_password
@@ -71,6 +71,9 @@ def post_brand(
 ):
     # TODO: Can we make these two only go to the DB once instead of twice?
     brand_name = read_brand(db, param={"name": data.name})
+    category = read_category(db, param={"id": data.category_id})
+    if category is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category must exist")
     if brand_name is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Brand with this name already exists")
     brand_website = read_brand(db, param={"website": data.website})
@@ -186,7 +189,7 @@ def delete_category(
     return {"categories": [update_category(db, category)]}
 
 
-@app.patch("/users/{user_id}", response_model=UserOut, tags=["Users"])
+@app.patch("/users/{user_id}", response_model=ListOfUsers, tags=["Users"])
 def patch_user(
     data: UserPasswordUpdate,
     user_id: UUID = Path(title="User id to update"),
@@ -204,10 +207,10 @@ def patch_user(
             setattr(user, key, get_hashed_password(value))
         else:
             setattr(user, key, value)
-    return update_user(db, user)
+    return {"users": [update_user(db, user)]}
 
 
-@app.delete("/users/{user_id}", tags=["Users"])
+@app.delete("/users/{user_id}", response_model=ListOfUsers, tags=["Users"])
 def delete_user(
     user_id: UUID = Path(title="The id of the user to delete"),
     db: Session = Depends(get_db),
@@ -219,16 +222,16 @@ def delete_user(
     deleted_dict = {"deleted_at": datetime.now(), "deleted_by": current_user.id}
     for key, value in deleted_dict.items():
         setattr(user, key, value)
-    return update_user(db, user)
+    return {"users": [update_user(db, user)]}
 
 
-@app.post("/signup", summary="Create new user", response_model=UserOut, status_code=201, tags=["Users"])
+@app.post("/signup", summary="Create new user", response_model=ListOfUsers, status_code=201, tags=["Users"])
 def post_user(data: UserAuth, db: Session = Depends(get_db)):
     user_check = read_user(db, param={"email": data.email})
     if user_check is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User with this email already exist")
     user = {"email": data.email, "password": get_hashed_password(data.password)}
-    return create_user(db, user)
+    return {"users": [create_user(db, user)]}
 
 
 @app.post("/login", summary="Create access and refresh tokens for user", response_model=TokenSchema, tags=["Users"])
@@ -245,9 +248,9 @@ def post_login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Sessio
 @app.get(
     "/users",
     summary="Get details of all users",
-    response_model=List[UserOut],
+    response_model=ListOfUsers,
     dependencies=[Depends(get_current_user)],
     tags=["Users"],
 )
 def get_all_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return read_all_users(db, skip=skip, limit=limit)
+    return {"users": read_all_users(db, skip=skip, limit=limit)}
