@@ -83,8 +83,8 @@ def post_brand(
 
 
 @app.get("/brands", response_model=ListOfBrands, dependencies=[Depends(get_current_user)], tags=["Brands"])
-def get_all_brands(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return {"brands": read_all_brands(db, skip=skip, limit=limit)}
+def get_all_brands(skip: int = 0, limit: int = 100, show_deleted: bool = False, db: Session = Depends(get_db)):
+    return {"brands": read_all_brands(db, skip=skip, limit=limit, show_deleted=show_deleted)}
 
 
 @app.patch("/brands/{brand_id}", response_model=ListOfBrands, tags=["Brands"])
@@ -148,8 +148,8 @@ def post_category(
     dependencies=[Depends(get_current_user)],
     tags=["Categories"],
 )
-def get_all_categories(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return {"categories": read_all_categories(db, skip=skip, limit=limit)}
+def get_all_categories(skip: int = 0, limit: int = 100, show_deleted: bool = False, db: Session = Depends(get_db)):
+    return {"categories": read_all_categories(db, skip=skip, limit=limit, show_deleted=show_deleted)}
 
 
 @app.patch(
@@ -252,5 +252,5 @@ def post_login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Sessio
     dependencies=[Depends(get_current_user)],
     tags=["Users"],
 )
-def get_all_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return {"users": read_all_users(db, skip=skip, limit=limit)}
+def get_all_users(skip: int = 0, limit: int = 100, show_deleted: bool = False, db: Session = Depends(get_db)):
+    return {"users": read_all_users(db, skip=skip, limit=limit, show_deleted=show_deleted)}

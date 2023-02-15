@@ -17,9 +17,11 @@
       ]}
   ```
 
-- [ ] Em criacao de brands, o id da categoria deve ser um parametero e nao estar no body
-- [ ] Adicionar mais testes e testar a validacao
+- ~~ [ ] Em criacao de brands, o id da categoria deve ser um parametero e nao estar no body~~
 - [ ] Adicionar query show_deleted
+- [ ] Adicionar routes para ir buscar so 1 categoria, 1 brand e 1 user
+- [ ] Adicionar mais testes e testar a validacao
+- [ ] Acrescentar branch develop. Criar regras para merge em develop e merge em main
 
 # Tidyup
 

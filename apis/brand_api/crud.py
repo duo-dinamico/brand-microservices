@@ -32,8 +32,14 @@ def read_brand(db: Session, param: dict[str, str | UUID]) -> Brands:
     )
 
 
-def read_all_brands(db: Session, skip: int = 0, limit: int = 100) -> list[Brands]:
-    return db.query(Brands).filter(Brands.deleted_at == None).offset(skip).limit(limit).all()
+def read_all_brands(db: Session, skip: int = 0, limit: int = 100, show_deleted: bool = False) -> list[Brands]:
+    return (
+        db.query(Brands)
+        .filter(Brands.deleted_at == None if not show_deleted else Brands.deleted_at != None)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 def update_brand(db: Session, brand) -> Brands:
@@ -56,8 +62,14 @@ def create_category(db: Session, category, user_id) -> Categories:
     return db_category
 
 
-def read_all_categories(db: Session, skip: int = 0, limit: int = 100) -> list[Categories]:
-    return db.query(Categories).filter(Categories.deleted_at == None).offset(skip).limit(limit).all()
+def read_all_categories(db: Session, skip: int = 0, limit: int = 100, show_deleted: bool = False) -> list[Categories]:
+    return (
+        db.query(Categories)
+        .filter(Categories.deleted_at == None if not show_deleted else Categories.deleted_at != None)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 def read_category(db: Session, param) -> Categories:
@@ -125,7 +137,7 @@ def create_user(db: Session, user) -> dict[str, str]:
     )
 
 
-def read_all_users(db: Session, skip: int = 0, limit: int = 100) -> list[dict[str, str]]:
+def read_all_users(db: Session, skip: int = 0, limit: int = 100, show_deleted: bool = False) -> list[dict[str, str]]:
     return (
         db.query(
             Users.id,
@@ -136,7 +148,7 @@ def read_all_users(db: Session, skip: int = 0, limit: int = 100) -> list[dict[st
             Users.deleted_by,
             Users.deleted_at,
         )
-        .filter(Users.deleted_at == None)
+        .filter(Users.deleted_at == None if not show_deleted else Users.deleted_at != None)
         .offset(skip)
         .limit(limit)
         .all()
