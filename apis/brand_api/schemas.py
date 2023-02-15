@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 from uuid import UUID
 
 from pydantic import BaseModel, Extra, Field
@@ -29,6 +30,10 @@ class BrandsResponse(BrandsBase):
 
     class Config:
         orm_mode = True
+
+
+class ListOfBrands(BaseModel):
+    brands: List[BrandsResponse]
 
 
 class BrandsBaseOptionalBody(BaseModel):

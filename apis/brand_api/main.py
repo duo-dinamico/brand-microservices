@@ -26,9 +26,9 @@ from .dependencies import get_current_user
 from .schemas import (
     BrandsBase,
     BrandsBaseOptionalBody,
-    BrandsResponse,
     CategoriesBaseOptionalBody,
     CategoriesResponse,
+    ListOfBrands,
     SystemUser,
     TokenSchema,
     UserAuth,
@@ -60,7 +60,7 @@ def read_root():
 @app.post(
     "/brands",
     summary="Create new brand",
-    response_model=BrandsResponse,
+    response_model=ListOfBrands,
     status_code=201,
     tags=["Brands"],
 )
@@ -76,15 +76,15 @@ def post_brand(
     brand_website = read_brand(db, param={"website": data.website})
     if brand_website is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Brand with this website already exists")
-    return create_brand(db, data, current_user.id)
+    return {"brands": [create_brand(db, data, current_user.id)]}
 
 
-@app.get("/brands", response_model=List[BrandsResponse], dependencies=[Depends(get_current_user)], tags=["Brands"])
+@app.get("/brands", response_model=ListOfBrands, dependencies=[Depends(get_current_user)], tags=["Brands"])
 def get_all_brands(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return read_all_brands(db, skip=skip, limit=limit)
+    return {"brands": read_all_brands(db, skip=skip, limit=limit)}
 
 
-@app.patch("/brands/{brand_id}", response_model=BrandsResponse, tags=["Brands"])
+@app.patch("/brands/{brand_id}", response_model=ListOfBrands, tags=["Brands"])
 def patch_brand(
     data: BrandsBaseOptionalBody,
     brand_id: UUID = Path(title="The id of the brand to update"),
@@ -103,10 +103,10 @@ def patch_brand(
             if category is None:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category must exist")
         setattr(brand, key, value)
-    return update_brand(db, brand)
+    return {"brands": [update_brand(db, brand)]}
 
 
-@app.delete("/brands/{brand_id}", tags=["Brands"])
+@app.delete("/brands/{brand_id}", response_model=ListOfBrands, tags=["Brands"])
 def delete_brand(
     brand_id: UUID = Path(title="The id of the brand to delete"),
     db: Session = Depends(get_db),
@@ -118,7 +118,7 @@ def delete_brand(
     deleted_dict = {"deleted_at": datetime.now(), "deleted_by": current_user.id}
     for key, value in deleted_dict.items():
         setattr(brand, key, value)
-    return update_brand(db, brand)
+    return {"brands": [update_brand(db, brand)]}
 
 
 @app.post(

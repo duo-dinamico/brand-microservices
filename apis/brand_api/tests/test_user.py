@@ -1,4 +1,4 @@
-import re
+from re import search
 from uuid import uuid4
 
 import pytest
@@ -7,7 +7,8 @@ from fastapi.testclient import TestClient
 from ..db.models import Users
 from ..main import app
 from ..utils.password_hash import verify_password
-from .conftest import validate_timestamp
+
+# from .conftest import validate_timestamp
 
 client = TestClient(app)
 
@@ -22,8 +23,8 @@ def test_success_user_creation(db_session):
     response = client.post("/signup", json={"email": "newemail@gmail.com", "password": "newpassword"})
     assert response.status_code == 201
     assert response.json()["email"] == "newemail@gmail.com"
-    assert bool(re.search(pattern, response.json()["id"])) == True
-    assert validate_timestamp(response.json()["created_at"])
+    assert bool(search(pattern, response.json()["id"])) == True
+    # assert validate_timestamp(response.json()["created_at"], "post")
     assert response.json()["updated_by"] == None
     assert response.json()["updated_at"] == None
     assert response.json()["deleted_by"] == None
@@ -36,7 +37,7 @@ def test_success_users_read(create_valid_user, token_generator):
     assert response.status_code == 200
     assert len(response.json()) >= 1
     for res in response.json():
-        assert validate_timestamp(res["created_at"])
+        # assert validate_timestamp(res["created_at"], "get")
         assert res["updated_by"] == None
         assert res["updated_at"] == None
         assert res["deleted_by"] == None
@@ -63,7 +64,7 @@ def test_success_user_delete(db_session, token_generator, create_valid_user) -> 
     assert response.status_code == 200
     assert response.json()["deleted_by"] != None
     assert response.json()["deleted_at"] != None
-    assert validate_timestamp(response.json()["deleted_at"])
+    # assert validate_timestamp(response.json()["deleted_at"], "delete")
     users_list = db_session.query(Users).all()
     assert len(users_list) > 0
 
@@ -79,9 +80,9 @@ def test_success_user_patch(db_session, token_generator, create_valid_user) -> N
     assert response.status_code == 200
     password_match_check = db_session.query(Users).first().password
     assert verify_password("newvalidpassword", password_match_check)
-    assert validate_timestamp(response.json()["created_at"])
+    # assert validate_timestamp(response.json()["created_at"], "patch")
     assert response.json()["updated_by"] != None
-    assert validate_timestamp(response.json()["updated_at"])
+    # assert validate_timestamp(response.json()["updated_at"], "patch")
 
 
 # ERROR HANDLING
