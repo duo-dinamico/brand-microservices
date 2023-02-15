@@ -6,7 +6,7 @@
 - [x] Mudar modelos para adicionar created at, created by, updated at, updated by, deleted at, deleted by
 - [x] Mudar secrets para github secrets
 - [x] Antes de correr qualquer docker, fazer down primeiro no Makefile
-- [ ] Complementar as routes preenchendo os timestamps e ownerships de ~~categories~~, ~~brands~~ e users
+- [x] Complementar as routes preenchendo os timestamps e ownerships de ~~categories~~, ~~brands~~ e ~~users~~
 - [ ] Mudar respostas para ser sempre um objecto com uma chave com uma lista (mesmo que seja só um) [~~brands~~], [~~categories~~] e [users]
 - [ ] Em criacao de brands, o id da categoria deve ser um parametero e nao estar no body
 

@@ -72,6 +72,12 @@ def delete_brand(db_session, create_valid_brand, token_generator):
     return client.delete(f"/brands/{brand_id}", headers={"Authorization": "Bearer " + token_generator})
 
 
+@pytest.fixture
+def delete_user(db_session, create_valid_user, token_generator):
+    user_id = db_session.query(Users).first().id
+    return client.delete(f"/users/{user_id}", headers={"Authorization": "Bearer " + token_generator})
+
+
 # TODO: Validation should probably become a class with these two as methods inside to check everything in one go
 def validate_timestamp(data, method):
     pattern = "^[0-9]{4}-[0-1]{1}[0-9]{1}-[0-3]{1}[0-9]{1}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}$"
