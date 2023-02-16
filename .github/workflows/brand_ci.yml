@@ -1,11 +1,11 @@
-name: brand_microservices_ci
+name: brand_ci
 
 on:
   pull_request:
     branches: ["main", "develop"]
 
 jobs:
-  build:
+  brand_ci:
     runs-on: ubuntu-latest
     permissions:
       contents: read
