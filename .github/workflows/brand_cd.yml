@@ -20,4 +20,7 @@ jobs:
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
           TARGET: ${{ secrets.REMOTE_TARGET }}
           EXCLUDE: "/.git/, /.github/, /apis/brand_api/tests/, /brand_microservices.drawio"
+          SCRIPT_BEFORE: |
+            whoami
+            ls -al
           SCRIPT_AFTER: /home/jsilva/brand/make up
