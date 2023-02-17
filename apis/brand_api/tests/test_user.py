@@ -146,3 +146,17 @@ def test_error_user_does_not_exist(token_generator) -> None:
     )
     assert response.status_code == 404
     assert response.json()["detail"] == "User not found"
+
+
+@pytest.mark.unit
+def test_error_user_exists_login(create_valid_user):
+    response = client.post("/login", data={"username": "invalidemail@gmail.com", "password": "validpassword"})
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Incorrect email or password"
+
+
+@pytest.mark.unit
+def test_error_user_login_wrong_password(create_valid_user):
+    response = client.post("/login", data={"username": "validemail@gmail.com", "password": "invalidpassword"})
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Incorrect email or password"
