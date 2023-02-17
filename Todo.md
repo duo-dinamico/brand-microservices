@@ -23,7 +23,7 @@
 - [ ] Adicionar mais testes e testar a validacao
 - [x] Acrescentar branch develop.
 - [ ] Criar regras para merge em develop e merge em main
-- [ ] Corrigir bug em POST LOGIN User (linha 240)
+- [x] Corrigir bug em POST LOGIN User (linha 240)
 - [ ] Adicionar localização das lojas no Brands
 - [ ] Diferenciar marcas Portuguesas de estrangeiras.
 - [ ] Resposta do Brand com a Categoria como objecto
