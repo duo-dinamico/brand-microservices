@@ -1,0 +1,16 @@
+name: Limit PR from Develop
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  pr_limit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Limit Pull Requests
+        uses: LukBukkit/action-pr-limits@v1.2.0
+        with:
+          allowlist: |
+            develop
