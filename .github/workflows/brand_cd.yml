@@ -26,4 +26,5 @@ jobs:
           SCRIPT_AFTER: |
             pwd
             ls -la
-            ./brand/make up
+            cd brand
+            make up
