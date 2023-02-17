@@ -18,10 +18,23 @@
   ```
 
 - ~~ [ ] Em criacao de brands, o id da categoria deve ser um parametero e nao estar no body~~
-- [ ] Adicionar query show_deleted
+- [x] Adicionar query show_deleted
 - [ ] Adicionar routes para ir buscar so 1 categoria, 1 brand e 1 user
 - [ ] Adicionar mais testes e testar a validacao
-- [ ] Acrescentar branch develop. Criar regras para merge em develop e merge em main
+- [x] Acrescentar branch develop. Criar regras para merge em develop e merge em main
+- [ ] Corrigir bug em POST LOGIN User (linha 240)
+- [ ] Adicionar localização das lojas no Brands
+- [ ] Diferenciar marcas Portuguesas de estrangeiras.
+- [ ] Resposta do Brand com a Categoria como objecto
+- [ ] Respostas gerais dos \_by User como objecto.
+- [ ] Validação das passwords e usernames.
+- [x] Limitar PR de develop para main.
+- [ ] Criar as pastas de dados dos Docker no servidor.
+
+# Futuro
+
+- [ ] Confirmação de registo por email.
+- [ ] Roles para Users.
 
 # Tidyup
 
