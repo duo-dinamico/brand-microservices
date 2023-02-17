@@ -12,6 +12,7 @@ client = TestClient(app)
 methods = [client.patch, client.delete]
 methods_category_id = [client.post, client.get]
 
+
 # DEFAULT BEHAVIOUR
 @pytest.mark.unit
 def test_success_categories_create(db_session, token_generator):
