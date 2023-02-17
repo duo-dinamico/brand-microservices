@@ -27,4 +27,4 @@ jobs:
             pwd
             ls -la
             cd brand
-            make up
+            make brand-cd
