@@ -21,7 +21,8 @@
 - [x] Adicionar query show_deleted
 - [ ] Adicionar routes para ir buscar so 1 categoria, 1 brand e 1 user
 - [ ] Adicionar mais testes e testar a validacao
-- [x] Acrescentar branch develop. Criar regras para merge em develop e merge em main
+- [x] Acrescentar branch develop.
+- [ ] Criar regras para merge em develop e merge em main
 - [ ] Corrigir bug em POST LOGIN User (linha 240)
 - [ ] Adicionar localização das lojas no Brands
 - [ ] Diferenciar marcas Portuguesas de estrangeiras.

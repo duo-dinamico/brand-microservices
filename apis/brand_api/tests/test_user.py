@@ -15,6 +15,7 @@ methods_auth = [client.get, client.patch, client.delete]
 methods_users = [client.post, client.patch, client.delete]
 methods_users_id = [client.post, client.get]
 
+
 # DEFAULT BEHAVIOUR
 @pytest.mark.unit
 def test_success_user_creation(db_session):
