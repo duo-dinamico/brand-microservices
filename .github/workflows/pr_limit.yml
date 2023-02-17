@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  limit_main_pr:
+  pr_limit:
     runs-on: ubuntu-latest
     steps:
       - name: Limit Pull Requests
