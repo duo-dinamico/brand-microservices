@@ -72,11 +72,14 @@ def read_all_categories(db: Session, skip: int = 0, limit: int = 100, show_delet
     )
 
 
-def read_category(db: Session, param) -> Categories:
+def read_category(db: Session, param, show_deleted: bool = False) -> Categories:
     filtering_param = list(param.keys())[0]
     return (
         db.query(Categories)
-        .filter(getattr(Categories, filtering_param, None) == param.get(filtering_param), Categories.deleted_at == None)
+        .filter(
+            getattr(Categories, filtering_param, None) == param.get(filtering_param),
+            Categories.deleted_at == None if not show_deleted else Categories.deleted_at != None,
+        )
         .first()
     )
 

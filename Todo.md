@@ -2,7 +2,6 @@
 
 - [x] Routes para patch de ~~brand~~, ~~user~~ e ~~categories~~
 - [x] Routes para delete de ~~brand~~, ~~user~~ e ~~categories~~
-- ~~[ ] Conftest que cria categorias, brands e users devia retornar o que cria para usar em testes que precisam de um atributo~~
 - [x] Mudar modelos para adicionar created at, created by, updated at, updated by, deleted at, deleted by
 - [x] Mudar secrets para github secrets
 - [x] Antes de correr qualquer docker, fazer down primeiro no Makefile
@@ -17,9 +16,8 @@
       ]}
   ```
 
-- ~~ [ ] Em criacao de brands, o id da categoria deve ser um parametero e nao estar no body~~
 - [x] Adicionar query show_deleted
-- [ ] Adicionar routes para ir buscar so 1 categoria, 1 brand e 1 user
+- [ ] Adicionar routes para ir buscar so 1 ~~categoria~~, 1 brand e 1 user
 - [ ] Adicionar mais testes e testar a validacao
 - [x] Acrescentar branch develop.
 - [ ] Criar regras para merge em develop e merge em main

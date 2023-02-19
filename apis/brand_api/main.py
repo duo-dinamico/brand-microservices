@@ -145,11 +145,29 @@ def post_category(
 @app.get(
     "/categories",
     response_model=ListOfCategories,
-    dependencies=[Depends(get_current_user)],
     tags=["Categories"],
+    dependencies=[Depends(get_current_user)],
 )
 def get_all_categories(skip: int = 0, limit: int = 100, show_deleted: bool = False, db: Session = Depends(get_db)):
     return {"categories": read_all_categories(db, skip=skip, limit=limit, show_deleted=show_deleted)}
+
+
+@app.get(
+    "/categories/{category_id}",
+    response_model=ListOfCategories,
+    tags=["Categories"],
+    dependencies=[Depends(get_current_user)],
+    summary="Retrieve a single category by it's GUID",
+)
+def get_category(
+    category_id: UUID = Path(title="The GUID of the category to obtain"),
+    show_deleted: bool = False,
+    db: Session = Depends(get_db),
+):
+    category = read_category(db, param={"id": category_id}, show_deleted=show_deleted)
+    if category is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
+    return {"categories": [read_category(db, param={"id": category_id}, show_deleted=show_deleted)]}
 
 
 @app.patch(

@@ -9,8 +9,9 @@ from .conftest import validate_timestamp_and_ownership
 
 client = TestClient(app)
 
-methods = [client.patch, client.delete]
-methods_category_id = [client.post, client.get]
+all_methods = [client.post, client.get, client.patch, client.patch]
+methods = [client.patch, client.put, client.delete]
+methods_category_id = [client.post]
 
 
 # DEFAULT BEHAVIOUR
@@ -35,6 +36,16 @@ def test_success_categories_read(token_generator, create_valid_category):
     response = client.get("/categories", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 200
     assert len(response.json()["categories"]) >= 1
+    validate_timestamp_and_ownership(response.json()["categories"], "get")
+
+
+@pytest.mark.unit
+def test_success_one_category_read(db_session, token_generator, create_valid_category):
+    category_id = db_session.query(Categories).first().id
+    response = client.get(f"/categories/{category_id}", headers={"Authorization": "Bearer " + token_generator})
+    assert response.status_code == 200
+    assert len(response.json()["categories"]) == 1
+    assert response.json()["categories"][0]["id"] == str(category_id)
     validate_timestamp_and_ownership(response.json()["categories"], "get")
 
 
@@ -112,6 +123,21 @@ def test_success_categories_read_deleted(token_generator, delete_category):
         assert res["deleted_by"] != None
 
 
+@pytest.mark.unit
+def test_success_one_category_read_non_deleted(db_session, token_generator, delete_category):
+    category_id = db_session.query(Categories).first().id
+    response = client.get(
+        f"/categories/{category_id}",
+        params={"show_deleted": True},
+        headers={"Authorization": "Bearer " + token_generator},
+    )
+    assert response.status_code == 200
+    assert len(response.json()["categories"]) == 1
+    for res in response.json()["categories"]:
+        assert res["deleted_at"] != None
+        assert res["deleted_by"] != None
+
+
 # ERROR HANDLING
 @pytest.mark.unit
 def test_error_method_not_allowed_categories():
@@ -128,31 +154,16 @@ def test_error_method_not_allowed_categories_id():
 
 
 @pytest.mark.unit
-def test_error_not_authorized_post_categories():
-    response = client.post("/categories")
-    assert response.status_code == 401
-    assert response.json()["detail"] == "Not authenticated"
-
-
-@pytest.mark.unit
-def test_error_not_authorized_get_categories():
-    response = client.get("/categories")
-    assert response.status_code == 401
-    assert response.json()["detail"] == "Not authenticated"
-
-
-@pytest.mark.unit
-def test_error_not_authorized_patch_categories_id():
-    response = client.patch(f"/categories/{uuid.uuid4()}")
-    assert response.status_code == 401
-    assert response.json()["detail"] == "Not authenticated"
-
-
-@pytest.mark.unit
-def test_error_not_authorized_delete_categories_id():
-    response = client.delete(f"/categories/{uuid.uuid4()}")
-    assert response.status_code == 401
-    assert response.json()["detail"] == "Not authenticated"
+def test_error_not_authorized_categories():
+    for met in all_methods:
+        if met == client.post or met == client.get:
+            response = met("/categories")
+            assert response.status_code == 401
+            assert response.json()["detail"] == "Not authenticated"
+        if met == client.patch or met == client.delete or met == client.get:
+            response = met(f"/categories/{uuid.uuid4()}")
+            assert response.status_code == 401
+            assert response.json()["detail"] == "Not authenticated"
 
 
 @pytest.mark.unit
@@ -213,5 +224,13 @@ def test_error_categories_delete_deleted_category(db_session, token_generator, d
         f"/categories/{category_id}",
         headers={"Authorization": "Bearer " + token_generator},
     )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Category not found"
+
+
+@pytest.mark.unit
+def test_error_one_category_read_deleted_category(db_session, token_generator, delete_category):
+    category_id = db_session.query(Categories).first().id
+    response = client.get(f"/categories/{category_id}", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 404
     assert response.json()["detail"] == "Category not found"
