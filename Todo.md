@@ -17,7 +17,7 @@
   ```
 
 - [x] Adicionar query show_deleted
-- [ ] Adicionar routes para ir buscar so 1 ~~categoria~~, 1 brand e 1 ~~user~~
+- [x] Adicionar routes para ir buscar so 1 ~~categoria~~, 1 ~~brand~~ e 1 ~~user~~
 - [ ] Adicionar mais testes e testar a validacao
 - [x] Acrescentar branch develop.
 - [ ] Criar regras para merge em develop e merge em main

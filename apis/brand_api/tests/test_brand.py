@@ -10,7 +10,7 @@ from .conftest import validate_timestamp_and_ownership
 client = TestClient(app)
 
 methods = [client.patch, client.delete]
-methods_brand_id = [client.post, client.get]
+methods_brand_id = [client.post]
 
 
 # DEFAULT BEHAVIOUR
@@ -39,6 +39,15 @@ def test_success_brands_read(token_generator, create_valid_brand):
     response = client.get("/brands", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 200
     assert len(response.json()["brands"]) >= 1
+    validate_timestamp_and_ownership(response.json()["brands"], "get")
+
+
+@pytest.mark.unit
+def test_success_one_brand_read(db_session, token_generator, create_valid_brand):
+    brand_id = db_session.query(Brands).first().id
+    response = client.get(f"/brands/{brand_id}", headers={"Authorization": "Bearer " + token_generator})
+    assert response.status_code == 200
+    assert len(response.json()["brands"]) == 1
     validate_timestamp_and_ownership(response.json()["brands"], "get")
 
 
@@ -97,6 +106,21 @@ def test_success_brands_read_deleted(token_generator, delete_brand):
     )
     assert response.status_code == 200
     assert len(response.json()["brands"]) >= 1
+    for res in response.json()["brands"]:
+        assert res["deleted_at"] != None
+        assert res["deleted_by"] != None
+
+
+@pytest.mark.unit
+def test_success_one_brand_read_non_deleted(db_session, token_generator, delete_brand):
+    brand_id = db_session.query(Brands).first().id
+    response = client.get(
+        f"/brands/{brand_id}",
+        params={"show_deleted": True},
+        headers={"Authorization": "Bearer " + token_generator},
+    )
+    assert response.status_code == 200
+    assert len(response.json()["brands"]) == 1
     for res in response.json()["brands"]:
         assert res["deleted_at"] != None
         assert res["deleted_by"] != None
@@ -179,3 +203,11 @@ def test_error_create_brand_category_must_exist(db_session, token_generator, cre
     )
     assert response.status_code == 404
     assert response.json()["detail"] == "Category must exist"
+
+
+@pytest.mark.unit
+def test_error_one_brand_read_deleted_category(db_session, token_generator, delete_brand):
+    brand_id = db_session.query(Brands).first().id
+    response = client.get(f"/brands/{brand_id}", headers={"Authorization": "Bearer " + token_generator})
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Brand not found"
