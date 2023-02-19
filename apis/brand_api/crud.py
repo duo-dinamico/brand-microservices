@@ -110,11 +110,14 @@ def update_user(db: Session, user) -> dict[str, bool]:
     )
 
 
-def read_user(db: Session, param) -> Users:
+def read_user(db: Session, param, show_deleted: bool = False) -> Users:
     filtering_param = list(param.keys())[0]
     return (
         db.query(Users)
-        .filter(getattr(Users, filtering_param, None) == param.get(filtering_param), Users.deleted_at == None)
+        .filter(
+            getattr(Users, filtering_param, None) == param.get(filtering_param),
+            Users.deleted_at == None if not show_deleted else Users.deleted_at != None,
+        )
         .first()
     )
 
@@ -155,4 +158,20 @@ def read_all_users(db: Session, skip: int = 0, limit: int = 100, show_deleted: b
         .offset(skip)
         .limit(limit)
         .all()
+    )
+
+
+def read_one_user(db: Session, user_id, show_deleted: bool = False) -> dict[str, str]:
+    return (
+        db.query(
+            Users.id,
+            Users.email,
+            Users.created_at,
+            Users.updated_by,
+            Users.updated_at,
+            Users.deleted_by,
+            Users.deleted_at,
+        )
+        .filter(Users.id == user_id, Users.deleted_at == None if not show_deleted else Users.deleted_at != None)
+        .first()
     )
