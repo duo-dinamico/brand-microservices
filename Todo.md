@@ -20,12 +20,12 @@
 - [ ] Adicionar routes para ir buscar so 1 ~~categoria~~, 1 brand e 1 user
 - [ ] Adicionar mais testes e testar a validacao
 - [x] Acrescentar branch develop.
-- [ ] Criar regras para merge em develop e merge em main
+- [x] Criar regras para merge em develop e merge em main
 - [x] Corrigir bug em POST LOGIN User (linha 240)
 - [ ] Adicionar localização das lojas no Brands
 - [ ] Diferenciar marcas Portuguesas de estrangeiras.
 - [ ] Resposta do Brand com a Categoria como objecto
-- [ ] Respostas gerais dos \_by User como objecto.
+- [ ] Respostas gerais dos by User como objecto.
 - [ ] Validação das passwords e usernames.
 - [x] Limitar PR de develop para main.
 - [ ] Criar as pastas de dados dos Docker no servidor.
@@ -46,4 +46,4 @@
 
 # Manutencao
 
-- [ ] Criar conta em Linode e Github a pagantes
+- [x] Criar conta em Hostinger e ~~Github~~ a pagantes
