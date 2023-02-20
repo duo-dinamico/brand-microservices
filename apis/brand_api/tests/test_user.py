@@ -13,7 +13,7 @@ client = TestClient(app)
 
 methods_auth = [client.get, client.patch, client.delete]
 methods_users = [client.post, client.patch, client.delete]
-methods_users_id = [client.post, client.get]
+methods_users_id = [client.post]
 
 
 # DEFAULT BEHAVIOUR
@@ -33,6 +33,16 @@ def test_success_users_read(create_valid_user, token_generator):
     response = client.get("/users", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 200
     assert len(response.json()["users"]) >= 1
+    validate_timestamp_and_ownership(response.json()["users"], "get")
+
+
+@pytest.mark.unit
+def test_success_one_user_read(db_session, create_valid_user, token_generator):
+    user_id = db_session.query(Users).first().id
+    response = client.get(f"/users/{user_id}", headers={"Authorization": "Bearer " + token_generator})
+    assert response.status_code == 200
+    assert len(response.json()["users"]) == 1
+    assert response.json()["users"][0]["id"] == str(user_id)
     validate_timestamp_and_ownership(response.json()["users"], "get")
 
 
@@ -80,6 +90,19 @@ def test_success_user_read_deleted(token_generator, delete_user):
     )
     assert response.status_code == 200
     assert len(response.json()["users"]) >= 1
+    for res in response.json()["users"]:
+        assert res["deleted_at"] != None
+        assert res["deleted_by"] != None
+
+
+@pytest.mark.unit
+def test_success_one_user_read_non_deleted(db_session, delete_user, token_generator):
+    user_id = db_session.query(Users).first().id
+    response = client.get(
+        f"/users/{user_id}", params={"show_deleted": True}, headers={"Authorization": "Bearer " + token_generator}
+    )
+    assert response.status_code == 200
+    assert len(response.json()["users"]) == 1
     for res in response.json()["users"]:
         assert res["deleted_at"] != None
         assert res["deleted_by"] != None
@@ -160,3 +183,11 @@ def test_error_user_login_wrong_password(create_valid_user):
     response = client.post("/login", data={"username": "validemail@gmail.com", "password": "invalidpassword"})
     assert response.status_code == 400
     assert response.json()["detail"] == "Incorrect email or password"
+
+
+@pytest.mark.unit
+def test_error_deleted_user_read(db_session, token_generator, delete_user) -> None:
+    user_id = db_session.query(Users).first().id
+    response = client.get(f"/users/{user_id}", headers={"Authorization": "Bearer " + token_generator})
+    assert response.status_code == 404
+    assert response.json()["detail"] == "User not found"
