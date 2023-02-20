@@ -15,6 +15,7 @@ from .crud import (
     read_all_users,
     read_brand,
     read_category,
+    read_one_user,
     read_user,
     update_brand,
     update_category,
@@ -207,10 +208,46 @@ def delete_category(
     return {"categories": [update_category(db, category)]}
 
 
+@app.post("/signup", summary="Create new user", response_model=ListOfUsers, status_code=201, tags=["Users"])
+def post_user(data: UserAuth, db: Session = Depends(get_db)):
+    user_check = read_user(db, param={"email": data.email})
+    if user_check is not None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User with this email already exist")
+    user = {"email": data.email, "password": get_hashed_password(data.password)}
+    return {"users": [create_user(db, user)]}
+
+
+@app.get(
+    "/users",
+    response_model=ListOfUsers,
+    tags=["Users"],
+    dependencies=[Depends(get_current_user)],
+    summary="Get details of all users",
+)
+def get_all_users(skip: int = 0, limit: int = 100, show_deleted: bool = False, db: Session = Depends(get_db)):
+    return {"users": read_all_users(db, skip=skip, limit=limit, show_deleted=show_deleted)}
+
+
+@app.get(
+    "/users/{user_id}",
+    response_model=ListOfUsers,
+    tags=["Users"],
+    dependencies=[Depends(get_current_user)],
+    summary="Get details of all users",
+)
+def get_user(
+    user_id: UUID = Path(title="User GUID to fetch"), show_deleted: bool = False, db: Session = Depends(get_db)
+):
+    user = read_user(db, param={"id": user_id}, show_deleted=show_deleted)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return {"users": [read_one_user(db, user_id, show_deleted=show_deleted)]}
+
+
 @app.patch("/users/{user_id}", response_model=ListOfUsers, tags=["Users"])
 def patch_user(
     data: UserPasswordUpdate,
-    user_id: UUID = Path(title="User id to update"),
+    user_id: UUID = Path(title="User GUID to update"),
     db: Session = Depends(get_db),
     current_user: SystemUser = Depends(get_current_user),
 ):
@@ -243,15 +280,6 @@ def delete_user(
     return {"users": [update_user(db, user)]}
 
 
-@app.post("/signup", summary="Create new user", response_model=ListOfUsers, status_code=201, tags=["Users"])
-def post_user(data: UserAuth, db: Session = Depends(get_db)):
-    user_check = read_user(db, param={"email": data.email})
-    if user_check is not None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User with this email already exist")
-    user = {"email": data.email, "password": get_hashed_password(data.password)}
-    return {"users": [create_user(db, user)]}
-
-
 @app.post("/login", summary="Create access and refresh tokens for user", response_model=TokenSchema, tags=["Users"])
 def post_login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = read_user(db, param={"email": form_data.username})
@@ -263,14 +291,3 @@ def post_login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Sessio
         "access_token": create_access_token(user.email),
         "refresh_token": create_refresh_token(user.email),
     }
-
-
-@app.get(
-    "/users",
-    summary="Get details of all users",
-    response_model=ListOfUsers,
-    dependencies=[Depends(get_current_user)],
-    tags=["Users"],
-)
-def get_all_users(skip: int = 0, limit: int = 100, show_deleted: bool = False, db: Session = Depends(get_db)):
-    return {"users": read_all_users(db, skip=skip, limit=limit, show_deleted=show_deleted)}
