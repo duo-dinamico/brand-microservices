@@ -23,11 +23,14 @@ def create_brand(db: Session, brand: BrandsBase, user_id) -> Brands:
     return db_brand
 
 
-def read_brand(db: Session, param: dict[str, str | UUID]) -> Brands:
+def read_brand(db: Session, param: dict[str, str | UUID], show_deleted: bool = False) -> Brands:
     filtering_param = list(param.keys())[0]
     return (
         db.query(Brands)
-        .filter(getattr(Brands, filtering_param, None) == param.get(filtering_param), Brands.deleted_at == None)
+        .filter(
+            getattr(Brands, filtering_param, None) == param.get(filtering_param),
+            Brands.deleted_at == None if not show_deleted else Brands.deleted_at != None,
+        )
         .first()
     )
 
