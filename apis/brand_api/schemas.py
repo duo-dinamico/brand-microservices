@@ -57,6 +57,9 @@ class UserOut(BaseModel):
     deleted_at: datetime | None
     deleted_by: UUID | None
 
+    class Config:
+        orm_mode = True
+
 
 class ListOfUsers(BaseModel):
     users: List[UserOut]

@@ -98,19 +98,7 @@ def update_user(db: Session, user) -> dict[str, bool]:
     db.add(user)
     db.commit()
     db.refresh(user)
-    return (
-        db.query(
-            Users.id,
-            Users.email,
-            Users.created_at,
-            Users.updated_by,
-            Users.updated_at,
-            Users.deleted_by,
-            Users.deleted_at,
-        )
-        .filter(Users.id == user.id)
-        .first()
-    )
+    return db.query(Users).filter(Users.id == user.id).first()
 
 
 def read_user(db: Session, param, show_deleted: bool = False) -> Users:
@@ -131,32 +119,13 @@ def create_user(db: Session, user) -> dict[str, str]:
     db.commit()
     db.refresh(db_user)
     # TODO: This kind of return should probably be it's own CRUD function
-    return (
-        db.query(
-            Users.id,
-            Users.email,
-            Users.created_at,
-            Users.updated_by,
-            Users.updated_at,
-            Users.deleted_by,
-            Users.deleted_at,
-        )
-        .filter(Users.id == db_user.id)
-        .first()
-    )
+    test = db.query(Users).filter(Users.id == db_user.id).first()
+    return test
 
 
 def read_all_users(db: Session, skip: int = 0, limit: int = 100, show_deleted: bool = False) -> list[dict[str, str]]:
     return (
-        db.query(
-            Users.id,
-            Users.email,
-            Users.created_at,
-            Users.updated_by,
-            Users.updated_at,
-            Users.deleted_by,
-            Users.deleted_at,
-        )
+        db.query(Users)
         .filter(Users.deleted_at == None if not show_deleted else Users.deleted_at != None)
         .offset(skip)
         .limit(limit)
@@ -166,15 +135,7 @@ def read_all_users(db: Session, skip: int = 0, limit: int = 100, show_deleted: b
 
 def read_one_user(db: Session, user_id, show_deleted: bool = False) -> dict[str, str]:
     return (
-        db.query(
-            Users.id,
-            Users.email,
-            Users.created_at,
-            Users.updated_by,
-            Users.updated_at,
-            Users.deleted_by,
-            Users.deleted_at,
-        )
+        db.query(Users)
         .filter(Users.id == user_id, Users.deleted_at == None if not show_deleted else Users.deleted_at != None)
         .first()
     )

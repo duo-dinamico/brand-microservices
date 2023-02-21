@@ -26,6 +26,7 @@ def test_success_user_creation(db_session):
         assert res["email"] == "newemail@gmail.com"
         assert bool(search(pattern, res["id"])) == True
     validate_timestamp_and_ownership(response.json()["users"], "post")
+    assert "password" not in response.json()["users"][0].keys()
 
 
 @pytest.mark.unit
