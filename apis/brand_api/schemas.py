@@ -7,6 +7,41 @@ from pydantic import BaseModel, Extra, Field
 from .db.models import MyEnum
 
 
+class CategoriesBase(BaseModel):
+    name: str
+    description: str
+    price_per_category: MyEnum
+    created_at: datetime
+    created_by: UUID
+    updated_at: datetime | None
+    updated_by: UUID | None
+    deleted_at: datetime | None
+    deleted_by: UUID | None
+
+    class Config:
+        orm_mode = True
+
+
+class CategoriesResponse(CategoriesBase):
+    id: UUID
+
+    class Config:
+        orm_mode = True
+
+
+class ListOfCategories(BaseModel):
+    categories: List[CategoriesResponse]
+
+
+class CategoriesBaseOptionalBody(BaseModel):
+    name: str | None
+    description: str | None
+    price_per_category: MyEnum | None
+
+    class Config:
+        orm_mode = True
+
+
 class BrandsBase(BaseModel):
     name: str
     website: str
@@ -21,6 +56,7 @@ class BrandsBase(BaseModel):
 
 class BrandsResponse(BrandsBase):
     id: UUID
+    category: CategoriesResponse
     created_at: datetime
     created_by: UUID
     updated_at: datetime | None
@@ -70,16 +106,6 @@ class UserAuth(BaseModel):
     password: str = Field(..., min_length=5, max_length=24, description="user password")
 
 
-class TokenSchema(BaseModel):
-    access_token: str
-    refresh_token: str
-
-
-class TokenPayload(BaseModel):
-    sub: str = ""
-    exp: int = 0
-
-
 class SystemUser(UserOut):
     password: str
 
@@ -91,36 +117,11 @@ class UserPasswordUpdate(BaseModel):
         extra = Extra.forbid
 
 
-class CategoriesBase(BaseModel):
-    name: str
-    description: str
-    price_per_category: MyEnum
-    created_at: datetime
-    created_by: UUID
-    updated_at: datetime | None
-    updated_by: UUID | None
-    deleted_at: datetime | None
-    deleted_by: UUID | None
-
-    class Config:
-        orm_mode = True
+class TokenSchema(BaseModel):
+    access_token: str
+    refresh_token: str
 
 
-class CategoriesResponse(CategoriesBase):
-    id: UUID
-
-    class Config:
-        orm_mode = True
-
-
-class ListOfCategories(BaseModel):
-    categories: List[CategoriesResponse]
-
-
-class CategoriesBaseOptionalBody(BaseModel):
-    name: str | None
-    description: str | None
-    price_per_category: MyEnum | None
-
-    class Config:
-        orm_mode = True
+class TokenPayload(BaseModel):
+    sub: str = ""
+    exp: int = 0
