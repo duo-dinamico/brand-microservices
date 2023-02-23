@@ -24,7 +24,7 @@ def get_db():
 
 def get_current_user(db: Session = Depends(get_db), token: str = Depends(reuseable_oauth)) -> SystemUser:
     try:
-        payload = jwt.decode(token, os.environ.get("JWT_SECRET_KEY"), algorithms=os.environ.get("ALGORITHM"))
+        payload = jwt.decode(token, os.getenv("JWT_SECRET_KEY"), algorithms=os.getenv("ALGORITHM"))
         token_data = TokenPayload(**payload)
 
         if datetime.fromtimestamp(token_data.exp) < datetime.now():
