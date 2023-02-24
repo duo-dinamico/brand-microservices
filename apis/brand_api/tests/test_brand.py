@@ -3,7 +3,7 @@ from uuid import uuid4
 import pytest
 from fastapi.testclient import TestClient
 
-from ..db.models import Brands, Categories
+from ..db.models import Brand, Category
 from ..main import app
 from .conftest import validate_timestamp_and_ownership
 
@@ -16,7 +16,7 @@ methods_brand_id = [client.post]
 # DEFAULT BEHAVIOUR
 @pytest.mark.unit
 def test_success_brand_creation(db_session, token_generator, create_valid_category):
-    category_id = db_session.query(Categories).first().id
+    category_id = db_session.query(Category).first().id
     response = client.post(
         "/brands",
         headers={"Authorization": "Bearer " + token_generator},
@@ -44,7 +44,7 @@ def test_success_brands_read(token_generator, create_valid_brand):
 
 @pytest.mark.unit
 def test_success_one_brand_read(db_session, token_generator, create_valid_brand):
-    brand_id = db_session.query(Brands).first().id
+    brand_id = db_session.query(Brand).first().id
     response = client.get(f"/brands/{brand_id}", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 200
     assert len(response.json()["brands"]) == 1
@@ -60,7 +60,7 @@ def test_success_brands_read_non_deleted(token_generator, delete_brand):
 
 @pytest.mark.unit
 def test_success_brand_update_name(db_session, token_generator, create_valid_brand):
-    brand_id = db_session.query(Brands).first().id
+    brand_id = db_session.query(Brand).first().id
     response = client.patch(
         f"/brands/{brand_id}", headers={"Authorization": "Bearer " + token_generator}, json={"name": "updatedBrandName"}
     )
@@ -72,30 +72,35 @@ def test_success_brand_update_name(db_session, token_generator, create_valid_bra
 
 @pytest.mark.unit
 def test_success_brand_update_category(db_session, token_generator, create_valid_brand):
-    update_category = Categories(name="updateCategoryName", description="updateDescriptionName", price_per_category=1)
-    db_session.add(update_category)
-    db_session.commit()
-    db_session.refresh(update_category)
+    responseCategory = client.post(
+        "/categories",
+        headers={"Authorization": "Bearer " + token_generator},
+        json={
+            "name": "validCategoryName",
+            "description": "Desc",
+            "price_per_category": 3,
+        },
+    )
 
-    brand_id = db_session.query(Brands).first().id
+    brand_id = db_session.query(Brand).first().id
     response = client.patch(
         f"/brands/{brand_id}",
         headers={"Authorization": "Bearer " + token_generator},
-        json={"category_id": str(update_category.id)},
+        json={"category_id": str(responseCategory.json()["categories"][0]["id"])},
     )
     assert response.status_code == 200
     for res in response.json()["brands"]:
-        assert res["category_id"] == str(update_category.id)
+        assert res["category_id"] == str(responseCategory.json()["categories"][0]["id"])
     validate_timestamp_and_ownership(response.json()["brands"], "patch")
 
 
 @pytest.mark.unit
 def test_success_brand_delete(db_session, token_generator, create_valid_brand):
-    brand_id = db_session.query(Brands).first().id
+    brand_id = db_session.query(Brand).first().id
     response = client.delete(f"/brands/{brand_id}", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 200
     validate_timestamp_and_ownership(response.json()["brands"], "delete")
-    brands_list = db_session.query(Brands).all()
+    brands_list = db_session.query(Brand).all()
     assert len(brands_list) > 0
 
 
@@ -113,7 +118,7 @@ def test_success_brands_read_deleted(token_generator, delete_brand):
 
 @pytest.mark.unit
 def test_success_one_brand_read_non_deleted(db_session, token_generator, delete_brand):
-    brand_id = db_session.query(Brands).first().id
+    brand_id = db_session.query(Brand).first().id
     response = client.get(
         f"/brands/{brand_id}",
         params={"show_deleted": True},
@@ -165,7 +170,7 @@ def test_error_delete_brand_does_not_exist(token_generator, create_valid_brand):
 @pytest.mark.unit
 def test_error_update_brand_category_must_exist(db_session, token_generator, create_valid_brand):
     random_category_id = uuid4()
-    brand_id = db_session.query(Brands).first().id
+    brand_id = db_session.query(Brand).first().id
     response = client.patch(
         f"/brands/{brand_id}",
         headers={"Authorization": "Bearer " + token_generator},
@@ -177,7 +182,7 @@ def test_error_update_brand_category_must_exist(db_session, token_generator, cre
 
 @pytest.mark.unit
 def test_error_brands_delete_deleted_brand(db_session, token_generator, delete_brand):
-    brand_id = db_session.query(Brands).first().id
+    brand_id = db_session.query(Brand).first().id
     response = client.delete(
         f"/brands/{brand_id}",
         headers={"Authorization": "Bearer " + token_generator},
@@ -207,7 +212,7 @@ def test_error_create_brand_category_must_exist(db_session, token_generator, cre
 
 @pytest.mark.unit
 def test_error_one_brand_read_deleted_category(db_session, token_generator, delete_brand):
-    brand_id = db_session.query(Brands).first().id
+    brand_id = db_session.query(Brand).first().id
     response = client.get(f"/brands/{brand_id}", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 404
     assert response.json()["detail"] == "Brand not found"

@@ -4,7 +4,7 @@ from uuid import uuid4
 import pytest
 from fastapi.testclient import TestClient
 
-from ..db.models import Users
+from ..db.models import User
 from ..main import app
 from ..utils.password_hash import verify_password
 from .conftest import validate_timestamp_and_ownership
@@ -26,6 +26,7 @@ def test_success_user_creation(db_session):
         assert res["email"] == "newemail@gmail.com"
         assert bool(search(pattern, res["id"])) == True
     validate_timestamp_and_ownership(response.json()["users"], "post")
+    assert "password" not in response.json()["users"][0].keys()
 
 
 @pytest.mark.unit
@@ -38,7 +39,7 @@ def test_success_users_read(create_valid_user, token_generator):
 
 @pytest.mark.unit
 def test_success_one_user_read(db_session, create_valid_user, token_generator):
-    user_id = db_session.query(Users).first().id
+    user_id = db_session.query(User).first().id
     response = client.get(f"/users/{user_id}", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 200
     assert len(response.json()["users"]) == 1
@@ -61,24 +62,24 @@ def test_success_user_login(create_valid_user):
 
 @pytest.mark.unit
 def test_success_user_delete(db_session, token_generator, create_valid_user) -> None:
-    user_id = db_session.query(Users).first().id
+    user_id = db_session.query(User).first().id
     response = client.delete(f"/users/{user_id}", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 200
     validate_timestamp_and_ownership(response.json()["users"], "delete")
-    users_list = db_session.query(Users).all()
+    users_list = db_session.query(User).all()
     assert len(users_list) > 0
 
 
 @pytest.mark.unit
 def test_success_user_patch(db_session, token_generator, create_valid_user) -> None:
-    user_id = db_session.query(Users).first().id
+    user_id = db_session.query(User).first().id
     response = client.patch(
         f"/users/{user_id}",
         headers={"Authorization": "Bearer " + token_generator},
         json={"password": "newvalidpassword"},
     )
     assert response.status_code == 200
-    password_match_check = db_session.query(Users).first().password
+    password_match_check = db_session.query(User).first().password
     assert verify_password("newvalidpassword", password_match_check)
     validate_timestamp_and_ownership(response.json()["users"], "patch")
 
@@ -97,7 +98,7 @@ def test_success_user_read_deleted(token_generator, delete_user):
 
 @pytest.mark.unit
 def test_success_one_user_read_non_deleted(db_session, delete_user, token_generator):
-    user_id = db_session.query(Users).first().id
+    user_id = db_session.query(User).first().id
     response = client.get(
         f"/users/{user_id}", params={"show_deleted": True}, headers={"Authorization": "Bearer " + token_generator}
     )
@@ -187,7 +188,7 @@ def test_error_user_login_wrong_password(create_valid_user):
 
 @pytest.mark.unit
 def test_error_deleted_user_read(db_session, token_generator, delete_user) -> None:
-    user_id = db_session.query(Users).first().id
+    user_id = db_session.query(User).first().id
     response = client.get(f"/users/{user_id}", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 404
     assert response.json()["detail"] == "User not found"

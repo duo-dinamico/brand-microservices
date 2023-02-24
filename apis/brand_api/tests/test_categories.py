@@ -3,7 +3,7 @@ import uuid
 import pytest
 from fastapi.testclient import TestClient
 
-from ..db.models import Categories
+from ..db.models import Category
 from ..main import app
 from .conftest import validate_timestamp_and_ownership
 
@@ -41,7 +41,7 @@ def test_success_categories_read(token_generator, create_valid_category):
 
 @pytest.mark.unit
 def test_success_one_category_read(db_session, token_generator, create_valid_category):
-    category_id = db_session.query(Categories).first().id
+    category_id = db_session.query(Category).first().id
     response = client.get(f"/categories/{category_id}", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 200
     assert len(response.json()["categories"]) == 1
@@ -58,7 +58,7 @@ def test_success_categories_read_non_deleted(token_generator, delete_category):
 
 @pytest.mark.unit
 def test_success_categories_update_name(db_session, token_generator, create_valid_category):
-    category_id = db_session.query(Categories).first().id
+    category_id = db_session.query(Category).first().id
     response = client.patch(
         f"/categories/{category_id}",
         headers={"Authorization": "Bearer " + token_generator},
@@ -72,7 +72,7 @@ def test_success_categories_update_name(db_session, token_generator, create_vali
 
 @pytest.mark.unit
 def test_success_categories_update_description(db_session, token_generator, create_valid_category):
-    category_id = db_session.query(Categories).first().id
+    category_id = db_session.query(Category).first().id
     response = client.patch(
         f"/categories/{category_id}",
         headers={"Authorization": "Bearer " + token_generator},
@@ -86,7 +86,7 @@ def test_success_categories_update_description(db_session, token_generator, crea
 
 @pytest.mark.unit
 def test_success_categories_update_price(db_session, token_generator, create_valid_category):
-    category_id = db_session.query(Categories).first().id
+    category_id = db_session.query(Category).first().id
     response = client.patch(
         f"/categories/{category_id}",
         headers={"Authorization": "Bearer " + token_generator},
@@ -100,14 +100,14 @@ def test_success_categories_update_price(db_session, token_generator, create_val
 
 @pytest.mark.unit
 def test_success_categories_delete(db_session, token_generator, create_valid_category):
-    category_id = db_session.query(Categories).first().id
+    category_id = db_session.query(Category).first().id
     response = client.delete(
         f"/categories/{category_id}",
         headers={"Authorization": "Bearer " + token_generator},
     )
     assert response.status_code == 200
     validate_timestamp_and_ownership(response.json()["categories"], "delete")
-    categories_list = db_session.query(Categories).all()
+    categories_list = db_session.query(Category).all()
     assert len(categories_list) > 0
 
 
@@ -125,7 +125,7 @@ def test_success_categories_read_deleted(token_generator, delete_category):
 
 @pytest.mark.unit
 def test_success_one_category_read_non_deleted(db_session, token_generator, delete_category):
-    category_id = db_session.query(Categories).first().id
+    category_id = db_session.query(Category).first().id
     response = client.get(
         f"/categories/{category_id}",
         params={"show_deleted": True},
@@ -179,7 +179,7 @@ def test_error_categories_update_nonexistent_category(token_generator, create_va
 
 @pytest.mark.unit
 def test_error_categories_update_wrong_price(db_session, token_generator, create_valid_category):
-    category_id = db_session.query(Categories).first().id
+    category_id = db_session.query(Category).first().id
     response = client.patch(
         f"/categories/{category_id}",
         headers={"Authorization": "Bearer " + token_generator},
@@ -207,7 +207,7 @@ def test_error_categories_post_existing_category_name(token_generator, create_va
 
 @pytest.mark.unit
 def test_error_categories_patch_deleted_category(db_session, token_generator, delete_category):
-    category_id = db_session.query(Categories).first().id
+    category_id = db_session.query(Category).first().id
     response = client.patch(
         f"/categories/{category_id}",
         headers={"Authorization": "Bearer " + token_generator},
@@ -219,7 +219,7 @@ def test_error_categories_patch_deleted_category(db_session, token_generator, de
 
 @pytest.mark.unit
 def test_error_categories_delete_deleted_category(db_session, token_generator, delete_category):
-    category_id = db_session.query(Categories).first().id
+    category_id = db_session.query(Category).first().id
     response = client.delete(
         f"/categories/{category_id}",
         headers={"Authorization": "Bearer " + token_generator},
@@ -230,7 +230,7 @@ def test_error_categories_delete_deleted_category(db_session, token_generator, d
 
 @pytest.mark.unit
 def test_error_one_category_read_deleted_category(db_session, token_generator, delete_category):
-    category_id = db_session.query(Categories).first().id
+    category_id = db_session.query(Category).first().id
     response = client.get(f"/categories/{category_id}", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 404
     assert response.json()["detail"] == "Category not found"
