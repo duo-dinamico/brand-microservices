@@ -14,7 +14,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # Confirm if pip is updated
-RUN pip3 install --upgrade pip
+RUN pip install --upgrade pip
 
 # Install Poetry.
 RUN --mount=type=cache,target=/root/.cache pip install poetry==1.3.1
@@ -40,6 +40,16 @@ COPY ./$PROJECT /home/user/$PROJECT
 # start app with uvicorn
 CMD ["uvicorn", "apis.brand_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
+#
+# prod target
+#
+FROM base as prod
+
+# copy project
+COPY ./$PROJECT /home/user/$PROJECT
+
+# start app with uvicorn
+CMD ["uvicorn", "apis.brand_api.main:app", "--host", "0.0.0.0", "--port", "80"]
 
 #
 # test target

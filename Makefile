@@ -13,6 +13,9 @@ docker-compose := docker compose
 up: down ## Run the application
 	ENVIRONMENT=development $(docker-compose) up --build brand_api
 
+up-prod: ## Run the application in production
+	ENVIRONMENT=production $(docker-compose) up -d --build  brand_api_production
+
 brand-cd: down ## Run the application as deamon
 	ENVIRONMENT=development $(docker-compose) up -d --build brand_api
 
