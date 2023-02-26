@@ -23,6 +23,28 @@ services:
     volumes:
       - ./apis/brand_api:/home/user/apis/brand_api
 
+  brand_api_production:
+    container_name: brand_api_production
+    depends_on:
+      brand_db_prod:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    restart: always
+    build:
+      dockerfile: ./apis/brand_api/Dockerfile
+      target: prod
+      context: .
+    environment:
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - REFRESH_TOKEN_EXPIRE_MINUTES=10080
+      - ALGORITHM=HS256
+      - JWT_SECRET_KEY
+      - JWT_REFRESH_SECRET_KEY
+      - SQLALCHEMY_DATABASE_URL=postgresql://postgres:postgres@brand_db/brand_db_${ENVIRONMENT}
+    volumes:
+      - ./apis/brand_api:/home/user/apis/brand_api
+
   unit:
     container_name: brand_api_unit
     depends_on:
@@ -64,6 +86,8 @@ services:
   brand_db:
     container_name: brand_db
     image: postgres:13
+    # deploy:
+    #   mode: global
     ports:
       - "5432:5432"
     # volumes:
@@ -71,6 +95,21 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=brand_db_${ENVIRONMENT}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  brand_db_prod:
+    container_name: brand_db_prod
+    image: postgres:13
+    volumes:
+      - ./psql_db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${PSUSER}
+      - POSTGRES_PASSWORD=${PSPASSWD}
       - POSTGRES_DB=brand_db_${ENVIRONMENT}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
