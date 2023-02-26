@@ -21,4 +21,6 @@ jobs:
         env:
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
           JWT_REFRESH_SECRET_KEY: ${{ secrets.JWT_REFRESH_SECRET_KEY }}
+          PSUSER: ${{ secrets.PSUSER }}
+          PSPASSWD: ${{ secrets.PSPASSWD }}
         run: make citest
