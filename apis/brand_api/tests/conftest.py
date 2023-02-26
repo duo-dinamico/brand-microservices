@@ -4,7 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from ..db.database import Base, SessionLocal, engine
-from ..db.models import Brands, Categories, Users
+from ..db.models import Brand, Category, User
 from ..main import app
 from ..utils.password_hash import get_hashed_password
 
@@ -22,7 +22,7 @@ def db_session():
 
 @pytest.fixture
 def create_valid_user(db_session):
-    db_session.add(Users(email="validemail@gmail.com", password=get_hashed_password("validpassword")))
+    db_session.add(User(email="validemail@gmail.com", password=get_hashed_password("validpassword")))
     db_session.commit()
 
 
@@ -35,19 +35,19 @@ def token_generator(create_valid_user):
 
 @pytest.fixture
 def create_valid_category(db_session, create_valid_user):
-    user_id = db_session.query(Users).first().id
+    user_id = db_session.query(User).first().id
     db_session.add(
-        Categories(name="catValidName", description="validCatDesc", price_per_category="two", created_by=user_id)
+        Category(name="catValidName", description="validCatDesc", price_per_category="two", created_by=user_id)
     )
     db_session.commit()
 
 
 @pytest.fixture
 def create_valid_brand(db_session, create_valid_category):
-    category_id = db_session.query(Categories).first().id
-    user_id = db_session.query(Users).first().id
+    category_id = db_session.query(Category).first().id
+    user_id = db_session.query(User).first().id
     db_session.add(
-        Brands(
+        Brand(
             name="validBrandName",
             website="www.validsite.pt",
             category_id=category_id,
@@ -62,19 +62,19 @@ def create_valid_brand(db_session, create_valid_category):
 
 @pytest.fixture
 def delete_category(db_session, create_valid_category, token_generator):
-    category_id = db_session.query(Categories).first().id
+    category_id = db_session.query(Category).first().id
     return client.delete(f"/categories/{category_id}", headers={"Authorization": "Bearer " + token_generator})
 
 
 @pytest.fixture
 def delete_brand(db_session, create_valid_brand, token_generator):
-    brand_id = db_session.query(Brands).first().id
+    brand_id = db_session.query(Brand).first().id
     return client.delete(f"/brands/{brand_id}", headers={"Authorization": "Bearer " + token_generator})
 
 
 @pytest.fixture
 def delete_user(db_session, create_valid_user, token_generator):
-    user_id = db_session.query(Users).first().id
+    user_id = db_session.query(User).first().id
     return client.delete(f"/users/{user_id}", headers={"Authorization": "Bearer " + token_generator})
 
 
