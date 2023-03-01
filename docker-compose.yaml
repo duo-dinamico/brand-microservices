@@ -90,9 +90,6 @@ services:
       - ./apis/brand_api:/home/user/apis/brand_api
 
   brand_db:
-    depends_on:
-      postgres-init:
-        condition: service_completed_successfully
     container_name: brand_db_${ENVIRONMENT}
     image: postgres:13
     volumes:
