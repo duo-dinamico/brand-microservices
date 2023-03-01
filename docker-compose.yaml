@@ -46,8 +46,6 @@ services:
       - PSUSER
       - PSPASSWD
       - SQLALCHEMY_DATABASE_URL=postgresql+psycopg2://${PSUSER}:${PSPASSWD}@brand_db/brand_db_${ENVIRONMENT}
-    volumes:
-      - ./apis/brand_api:/home/user/apis/brand_api
 
   unit:
     container_name: brand_api_unit
@@ -91,28 +89,20 @@ services:
     volumes:
       - ./apis/brand_api:/home/user/apis/brand_api
 
-  postgres-init:
-    image: postgres:13
-    volumes:
-      - ./psql_db:/var/lib/postgresql/data
-    entrypoint:
-      - sh
-      - -c
-      - |
-        chown -R 1000:1000 /var/lib/postgresql/data
-
   brand_db:
     depends_on:
       postgres-init:
         condition: service_completed_successfully
     container_name: brand_db_${ENVIRONMENT}
     image: postgres:13
+    volumes:
+      - psql_db:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=${PSUSER}
       - POSTGRES_PASSWORD=${PSPASSWD}
       - POSTGRES_DB=brand_db_${ENVIRONMENT}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${PSUSER} -d brand_db_${ENVIRONMENT}"]
       interval: 5s
       timeout: 5s
       retries: 3
