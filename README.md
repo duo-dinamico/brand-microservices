@@ -1,4 +1,5 @@
-# brand-microservices
+# brand-microservices 
+![App Version](https://img.shields.io/github/v/tag/duo-dinamico/brand-microservices?label=API)
 
 ![Python Version](https://img.shields.io/badge/python-v3.11-blue)
 ![fastAPI Version](https://img.shields.io/badge/fastapi-v0.92.0-blue)
@@ -10,12 +11,11 @@
 
 To run this project you will need a **_.env_** file in the root so that docker can access the following environment variables:
 
-```bash
+```console
 JWT_SECRET_KEY=password
-```
-
-```bash
 JWT_REFRESH_SECRET_KEY=password
+PSUSER=postgresuser
+PSPASSWD=password
 ```
 
 ## License
