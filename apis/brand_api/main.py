@@ -11,7 +11,8 @@ from .schemas import ListOfUsers, TokenSchema, UserAuth
 from .utils.password_hash import get_hashed_password, verify_password
 from .utils.tokens import create_access_token, create_refresh_token
 
-Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(engine)
+db = SessionLocal()
 
 app = FastAPI(title="Brands API", version="0.1.0")
 
@@ -30,13 +31,17 @@ app.include_router(categories.router)
 app.include_router(users.router)
 
 
-# Dependency
+@app.on_event("startup")
 def get_db():
-    db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
+
+@app.on_event("shutdown")
+def close_db():
+    db.close()
 
 
 @app.get("/", status_code=405, include_in_schema=False)
