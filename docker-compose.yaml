@@ -31,7 +31,7 @@ services:
       brand_db:
         condition: service_healthy
     expose:
-      - 8000
+      - 80
     restart: always
     build:
       dockerfile: ./apis/brand_api/Dockerfile
@@ -46,9 +46,11 @@ services:
       - PSUSER
       - PSPASSWD
       - SQLALCHEMY_DATABASE_URL=postgresql+psycopg2://${PSUSER}:${PSPASSWD}@brand_db/brand_db_${ENVIRONMENT}
-    labels: # new
+    labels:
       - "traefik.enable=true"
       - "traefik.http.routers.fastapi.rule=Host(`duodinamico.online`)"
+      - "traefik.http.routers.fastapi.tls=true"
+      - "traefik.http.routers.fastapi.tls.certresolver=letsencrypt"
 
   unit:
     container_name: brand_api_unit
@@ -107,14 +109,27 @@ services:
       timeout: 5s
       retries: 3
 
-  traefik: # new
-    image: traefik:latest
+  traefik:
+    build:
+      context: .
+      dockerfile: Dockerfile.traefik
     ports:
-      - 8008:80
-      - 8081:8080
+      - 80:80
+      - 443:443
     volumes:
-      - "./traefik.dev.toml:/etc/traefik/traefik.toml"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik-public-certificates:/certificates"
+    environment:
+      - TFUSERNAME
+      - TFPASSWORD
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`dashboard.duodinamico.online`) && (PathPrefix(`/`)"
+      - "traefik.http.routers.dashboard.tls=true"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=${TFUSERNAME}:${TFPASSWORD}"
 
 volumes:
   psql_db:
