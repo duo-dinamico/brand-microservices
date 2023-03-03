@@ -14,7 +14,7 @@ up: down ## Run the application
 	ENVIRONMENT=development $(docker-compose) up --build brand_api
 
 up-prod: ## Run the application in production
-	ENVIRONMENT=production $(docker-compose) up -d --build  brand_api_production
+	ENVIRONMENT=production $(docker-compose) up -d --build  brand_api_production traefik
 
 brand-cd: down ## Run the application as deamon
 	ENVIRONMENT=development $(docker-compose) up -d --build brand_api
@@ -26,7 +26,7 @@ buildci: ## Build the ci image
 	ENVIRONMENT=test $(docker-compose) build
 
 down: ## Stop the application
-	ENVIRONMENT=development $(docker-compose) down
+	ENVIRONMENT=development $(docker-compose) down && docker volume rm brand_microservices_psql_db || true
 
 test: utest itest  ## Run unit and integration tests
 
@@ -42,12 +42,10 @@ citest: ## Run ci tests
 check: ## Check the code base
 	poetry run black ./$(PROJECT) --check --diff --color
 	poetry run isort ./$(PROJECT)
-	poetry run mypy ./$(PROJECT)
 
 lint: ## Check the code base, and fix it
 	poetry run black ./$(PROJECT)
 	poetry run isort ./$(PROJECT)
-	poetry run mypy ./$(PROJECT)
 
 ## Migrations
 

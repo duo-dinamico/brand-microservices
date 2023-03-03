@@ -3,8 +3,8 @@ from re import search
 import pytest
 from fastapi.testclient import TestClient
 
-from ..db.database import Base, SessionLocal, engine
-from ..db.models import Brand, Category, User
+from ..db.database import SessionLocal, engine
+from ..db.models import Base, Brand, Category, User
 from ..main import app
 from ..utils.password_hash import get_hashed_password
 
@@ -15,9 +15,11 @@ client = TestClient(app)
 def db_session():
     Base.metadata.create_all(engine)
     session = SessionLocal()
-    yield session
-    session.close()
-    Base.metadata.drop_all(engine)
+    try:
+        yield session
+    finally:
+        session.close()
+        Base.metadata.drop_all(engine)
 
 
 @pytest.fixture

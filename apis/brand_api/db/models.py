@@ -4,9 +4,11 @@ from datetime import datetime
 
 from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import DeclarativeBase, relationship
 
-from .database import Base
+
+class Base(DeclarativeBase):
+    pass
 
 
 class Brand(Base):

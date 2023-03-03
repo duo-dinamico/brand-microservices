@@ -30,8 +30,8 @@ services:
     depends_on:
       brand_db:
         condition: service_healthy
-    ports:
-      - "80:80"
+    expose:
+      - 8000
     restart: always
     build:
       dockerfile: ./apis/brand_api/Dockerfile
@@ -46,6 +46,9 @@ services:
       - PSUSER
       - PSPASSWD
       - SQLALCHEMY_DATABASE_URL=postgresql+psycopg2://${PSUSER}:${PSPASSWD}@brand_db/brand_db_${ENVIRONMENT}
+    labels: # new
+      - "traefik.enable=true"
+      - "traefik.http.routers.fastapi.rule=Host(`duodinamico.online`)"
 
   unit:
     container_name: brand_api_unit
@@ -103,6 +106,15 @@ services:
       interval: 5s
       timeout: 5s
       retries: 3
+
+  traefik: # new
+    image: traefik:latest
+    ports:
+      - 8008:80
+      - 8081:8080
+    volumes:
+      - "./traefik.dev.toml:/etc/traefik/traefik.toml"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
 volumes:
   psql_db:
