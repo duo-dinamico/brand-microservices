@@ -48,7 +48,7 @@ services:
       - SQLALCHEMY_DATABASE_URL=postgresql+psycopg2://${PSUSER}:${PSPASSWD}@brand_db/brand_db_${ENVIRONMENT}
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.fastapi.rule=Host(`duodinamico.online`)"
+      - "traefik.http.routers.fastapi.rule=Host(`brands.duodinamico.online`)"
       - "traefik.http.routers.fastapi.tls=true"
       - "traefik.http.routers.fastapi.tls.certresolver=letsencrypt"
 
