@@ -124,7 +124,7 @@ services:
       - TFPASSWORD
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.dashboard.rule=Host(`dashboard.duodinamico.online`) && (PathPrefix(`/`)"
+      - "traefik.http.routers.dashboard.rule=Host(`dashboard.duodinamico.online`) && (PathPrefix(`/`))"
       - "traefik.http.routers.dashboard.tls=true"
       - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
       - "traefik.http.routers.dashboard.service=api@internal"
