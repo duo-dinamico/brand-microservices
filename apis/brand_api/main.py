@@ -14,7 +14,14 @@ from .utils.tokens import create_access_token, create_refresh_token
 Base.metadata.create_all(engine)
 db = SessionLocal()
 
-app = FastAPI(title="Brands API", version="0.1.0")
+app = FastAPI(
+    title="Brands API",
+    version="0.1.0",
+    description="<h3>An API to manage a data set related to brands that are Made in Portugal.\
+        </h3><br /><h2>CAUTION: The data on this API is still in alpha and subject to being \
+        deleted without prior notice. Use at your own risk.</h2>",
+    redoc_url=None,
+)
 
 
 app.add_middleware(
