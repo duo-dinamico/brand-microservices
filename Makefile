@@ -31,7 +31,7 @@ down: ## Stop the application
 test: utest itest  ## Run unit and integration tests
 
 utest: down ## Run unit tests
-	ENVIRONMENT=test $(docker-compose) run --rm unit pytest-watch ./apis/brand_api/tests
+	ENVIRONMENT=test $(docker-compose) run --rm unit pytest-watch ./apis/brand_api/tests/test_user.py
 
 itest: down ## Run integration tests
 	ENVIRONMENT=test $(docker-compose) run --rm integration pytest-watch ./apis/brand_api/tests

@@ -24,15 +24,25 @@ def db_session():
 
 @pytest.fixture
 def create_valid_user(db_session):
-    db_session.add(User(email="validemail@gmail.com", password=get_hashed_password("validpassword")))
+    db_session.add(User(username="validUser", password=get_hashed_password("validpassword")))
+    db_session.commit()
+
+
+@pytest.fixture
+def create_valid_user_with_email(db_session):
+    db_session.add(
+        User(
+            username="validUserWithEmail",
+            email="validemail@duodinamico.online",
+            password=get_hashed_password("validpasswordwithemail"),
+        )
+    )
     db_session.commit()
 
 
 @pytest.fixture
 def token_generator(create_valid_user):
-    return client.post("/login", data={"username": "validemail@gmail.com", "password": "validpassword"}).json()[
-        "access_token"
-    ]
+    return client.post("/login", data={"username": "validUser", "password": "validpassword"}).json()["access_token"]
 
 
 @pytest.fixture

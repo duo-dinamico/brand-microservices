@@ -40,7 +40,7 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(reuseab
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    user: User = db.query(User).filter(User.email == token_data.sub).first()
+    user: User = db.query(User).filter(User.username == token_data.sub).first()
 
     if user is None:
         raise HTTPException(

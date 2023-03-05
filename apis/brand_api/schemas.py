@@ -86,7 +86,7 @@ class BrandsBaseOptionalBody(BaseModel):
 
 class UserOut(BaseModel):
     id: UUID
-    email: str
+    username: str
     created_at: datetime
     updated_at: datetime | None
     updated_by: UUID | None
@@ -97,21 +97,34 @@ class UserOut(BaseModel):
         orm_mode = True
 
 
+class UserEmail(UserOut):
+    email: str | None
+
+
 class ListOfUsers(BaseModel):
     users: List[UserOut]
 
 
+class ListOfUsersWithEmail(BaseModel):
+    users: List[UserEmail]
+
+
 class UserAuth(BaseModel):
-    email: str = Field(..., description="user email")
+    username: str = Field(..., description="user name")
+    email: str | None = Field(default=None, description="user email")
     password: str = Field(..., min_length=5, max_length=24, description="user password")
+
+    class Config:
+        extra = Extra.forbid
 
 
 class SystemUser(UserOut):
     password: str
 
 
-class UserPasswordUpdate(BaseModel):
-    password: str = Field(..., min_length=5, max_length=24, description="user password")
+class UserUpdate(BaseModel):
+    email: str | None = Field(default=None, description="user email")
+    password: str | None = Field(default=None, min_length=5, max_length=24, description="user password")
 
     class Config:
         extra = Extra.forbid
