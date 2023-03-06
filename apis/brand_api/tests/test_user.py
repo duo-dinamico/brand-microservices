@@ -20,11 +20,27 @@ methods_users_id = [client.post]
 @pytest.mark.unit
 def test_success_user_creation(db_session):
     pattern = "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89aAbB][a-f0-9]{3}-[a-f0-9]{12}$"
-    response = client.post("/signup", json={"email": "newemail@gmail.com", "password": "newpassword"})
+    response = client.post(
+        "/signup", json={"username": "newUser", "email": "newemail@duodinamico.online", "password": "newpassword"}
+    )
     assert response.status_code == 201
     for res in response.json()["users"]:
-        assert res["email"] == "newemail@gmail.com"
+        assert res["email"] == "newemail@duodinamico.online"
         assert bool(search(pattern, res["id"])) == True
+    validate_timestamp_and_ownership(response.json()["users"], "post")
+    assert "password" not in response.json()["users"][0].keys()
+    assert response.json()["users"][0]["username"] != None
+
+
+@pytest.mark.unit
+def test_success_user_creation_without_email(db_session):
+    pattern = "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89aAbB][a-f0-9]{3}-[a-f0-9]{12}$"
+    response = client.post("/signup", json={"username": "newUser", "password": "newpassword"})
+    assert response.status_code == 201
+    for res in response.json()["users"]:
+        assert res["username"] == "newUser"
+        assert bool(search(pattern, res["id"])) == True
+        assert res["email"] == None
     validate_timestamp_and_ownership(response.json()["users"], "post")
     assert "password" not in response.json()["users"][0].keys()
 
@@ -35,6 +51,9 @@ def test_success_users_read(create_valid_user, token_generator):
     assert response.status_code == 200
     assert len(response.json()["users"]) >= 1
     validate_timestamp_and_ownership(response.json()["users"], "get")
+    for res in response.json()["users"]:
+        assert res["username"] != None
+        assert "email" not in res
 
 
 @pytest.mark.unit
@@ -45,6 +64,7 @@ def test_success_one_user_read(db_session, create_valid_user, token_generator):
     assert len(response.json()["users"]) == 1
     assert response.json()["users"][0]["id"] == str(user_id)
     validate_timestamp_and_ownership(response.json()["users"], "get")
+    assert response.json()["users"][0]["username"] != None
 
 
 @pytest.mark.unit
@@ -56,7 +76,7 @@ def test_success_users_read_non_deleted(token_generator, delete_user):
 
 @pytest.mark.unit
 def test_success_user_login(create_valid_user):
-    response = client.post("/login", data={"username": "validemail@gmail.com", "password": "validpassword"})
+    response = client.post("/login", data={"username": "validUser", "password": "validpassword"})
     assert response.status_code == 200
 
 
@@ -71,7 +91,7 @@ def test_success_user_delete(db_session, token_generator, create_valid_user) -> 
 
 
 @pytest.mark.unit
-def test_success_user_patch(db_session, token_generator, create_valid_user) -> None:
+def test_success_user_patch_password(db_session, token_generator, create_valid_user) -> None:
     user_id = db_session.query(User).first().id
     response = client.patch(
         f"/users/{user_id}",
@@ -81,6 +101,19 @@ def test_success_user_patch(db_session, token_generator, create_valid_user) -> N
     assert response.status_code == 200
     password_match_check = db_session.query(User).first().password
     assert verify_password("newvalidpassword", password_match_check)
+    validate_timestamp_and_ownership(response.json()["users"], "patch")
+
+
+@pytest.mark.unit
+def test_success_user_patch_email(db_session, token_generator, create_valid_user):
+    user_id = db_session.query(User).first().id
+    response = client.patch(
+        f"/users/{user_id}",
+        headers={"Authorization": "Bearer " + token_generator},
+        json={"email": "newvalieemail@duodinamico.online"},
+    )
+    assert response.status_code == 200
+    assert response.json()["users"][0]["email"] == "newvalieemail@duodinamico.online"
     validate_timestamp_and_ownership(response.json()["users"], "patch")
 
 
@@ -155,8 +188,19 @@ def test_error_not_authorized_patch_users_id() -> None:
 
 
 @pytest.mark.unit
-def test_error_user_exists(create_valid_user):
-    response = client.post("/signup", json={"email": "validemail@gmail.com", "password": "validpassword"})
+def test_error_username_exists(create_valid_user):
+    response = client.post(
+        "/signup", json={"username": "validUser", "email": "newemail@duodinamico.online", "password": "newpassword"}
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "User with this username already exist"
+
+
+@pytest.mark.unit
+def test_error_email_exists(create_valid_user_with_email):
+    response = client.post(
+        "/signup", json={"username": "newuser", "email": "validemail@duodinamico.online", "password": "newpassword"}
+    )
     assert response.status_code == 400
     assert response.json()["detail"] == "User with this email already exist"
 
@@ -174,16 +218,16 @@ def test_error_user_does_not_exist(token_generator) -> None:
 
 @pytest.mark.unit
 def test_error_user_exists_login(create_valid_user):
-    response = client.post("/login", data={"username": "invalidemail@gmail.com", "password": "validpassword"})
+    response = client.post("/login", data={"username": "invalidUser", "password": "validpassword"})
     assert response.status_code == 400
-    assert response.json()["detail"] == "Incorrect email or password"
+    assert response.json()["detail"] == "Incorrect username or password"
 
 
 @pytest.mark.unit
 def test_error_user_login_wrong_password(create_valid_user):
-    response = client.post("/login", data={"username": "validemail@gmail.com", "password": "invalidpassword"})
+    response = client.post("/login", data={"username": "validUser", "password": "invalidpassword"})
     assert response.status_code == 400
-    assert response.json()["detail"] == "Incorrect email or password"
+    assert response.json()["detail"] == "Incorrect username or password"
 
 
 @pytest.mark.unit
