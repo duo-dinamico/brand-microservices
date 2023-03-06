@@ -104,11 +104,10 @@ def read_user(db: Session, param: dict[str, str | UUID], show_deleted: bool = Fa
 
 
 def create_user(db: Session, user) -> dict[str, str]:
-    db_user = User(email=user["email"], password=user["password"], created_at=datetime.now())
+    db_user = User(username=user["username"], email=user["email"], password=user["password"], created_at=datetime.now())
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    # TODO: This kind of return should probably be it's own CRUD function
     test = db.query(User).filter(User.id == db_user.id).first()
     return test
 

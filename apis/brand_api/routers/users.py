@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from ..crud import read_all_users, read_one_user, read_user, update_user
 from ..db.database import SessionLocal
 from ..dependencies import get_current_user
-from ..schemas import ListOfUsers, SystemUser, UserPasswordUpdate
+from ..schemas import ListOfUsers, ListOfUsersWithEmail, SystemUser, UserUpdate
 from ..utils.password_hash import get_hashed_password
 
 router = APIRouter(prefix="/users", dependencies=[Depends(get_current_user)], tags=["Users"])
@@ -45,9 +45,9 @@ def get_user(
     return {"users": [read_one_user(db, user_id, show_deleted=show_deleted)]}
 
 
-@router.patch("/{user_id}", response_model=ListOfUsers)
+@router.patch("/{user_id}", response_model=ListOfUsersWithEmail)
 def patch_user(
-    data: UserPasswordUpdate,
+    data: UserUpdate,
     user_id: UUID = Path(title="User UUID to update"),
     db: Session = Depends(get_db),
     current_user: SystemUser = Depends(get_current_user),
