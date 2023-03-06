@@ -1,5 +1,9 @@
+import json
+
 from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.exceptions import HTTPException, RequestValidationError, ValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
@@ -24,6 +28,23 @@ app = FastAPI(
 )
 
 
+@app.exception_handler(RequestValidationError)
+@app.exception_handler(ValidationError)
+def validation_exception_handler(request, exc):
+    # print(f"The client sent invalid data!: {exc}") - Replace by logging
+    exc_json = json.loads(exc.json())
+    response = {"message": [], "data": None}
+
+    for error in exc_json:
+        error_location = error["loc"][-1]
+        if error_location == "__root__":
+            response["message"].append(f"{error['msg']}")
+        else:
+            response["message"].append(error_location + f": {error['msg']}")
+
+    return JSONResponse(response, status_code=422)
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -31,11 +52,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-app.include_router(brands.router)
-app.include_router(categories.router)
-app.include_router(users.router)
 
 
 @app.on_event("startup")
@@ -49,6 +65,11 @@ def get_db():
 @app.on_event("shutdown")
 def close_db():
     db.close()
+
+
+app.include_router(brands.router)
+app.include_router(categories.router)
+app.include_router(users.router)
 
 
 @app.get("/", status_code=405, include_in_schema=False)
