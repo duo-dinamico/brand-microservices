@@ -1,16 +1,13 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Extra, Field
+from pydantic import BaseModel, Extra, Field, StrictStr, root_validator
 
 from .db.models import MyEnum
 
 
-class CategoriesBase(BaseModel):
-    name: str
-    description: str
-    price_per_category: MyEnum
+class TimestampAndOwnership(BaseModel):
     created_at: datetime
     created_by: UUID
     updated_at: datetime | None
@@ -22,8 +19,11 @@ class CategoriesBase(BaseModel):
         orm_mode = True
 
 
-class CategoriesResponse(CategoriesBase):
+class CategoriesResponse(TimestampAndOwnership):
     id: UUID
+    name: str
+    description: str
+    price_per_category: MyEnum
 
     class Config:
         orm_mode = True
@@ -33,13 +33,31 @@ class ListOfCategories(BaseModel):
     categories: List[CategoriesResponse]
 
 
-class CategoriesBaseOptionalBody(BaseModel):
-    name: str | None
-    description: str | None
-    price_per_category: MyEnum | None
+class CategoriesPostBody(BaseModel):
+    name: StrictStr = Field(...)
+    description: Optional[StrictStr] = Field(default=None)
+    price_per_category: MyEnum = Field(...)
 
     class Config:
         orm_mode = True
+        extra = Extra.forbid
+
+
+class CategoriesPatchBody(BaseModel):
+    name: Optional[StrictStr] = Field(default=None)
+    description: Optional[StrictStr] = Field(default=None)
+    price_per_category: Optional[MyEnum] = Field(default=None)
+
+    class Config:
+        orm_mode = True
+        extra = Extra.forbid
+        validate_assignment = True
+
+    @root_validator(pre=True)
+    def validate_xor(cls, values):
+        if sum([bool(v) for v in values.values()]) != 1:
+            raise ValueError(f"At least one of the keys name, description or price_per_category must exist.")
+        return values
 
 
 class BrandsBase(BaseModel):
@@ -86,7 +104,7 @@ class BrandsBaseOptionalBody(BaseModel):
 
 class UserOut(BaseModel):
     id: UUID
-    email: str
+    username: str
     created_at: datetime
     updated_at: datetime | None
     updated_by: UUID | None
@@ -97,21 +115,34 @@ class UserOut(BaseModel):
         orm_mode = True
 
 
+class UserEmail(UserOut):
+    email: str | None
+
+
 class ListOfUsers(BaseModel):
     users: List[UserOut]
 
 
+class ListOfUsersWithEmail(BaseModel):
+    users: List[UserEmail]
+
+
 class UserAuth(BaseModel):
-    email: str = Field(..., description="user email")
+    username: str = Field(..., description="user name")
+    email: str | None = Field(default=None, description="user email")
     password: str = Field(..., min_length=5, max_length=24, description="user password")
+
+    class Config:
+        extra = Extra.forbid
 
 
 class SystemUser(UserOut):
     password: str
 
 
-class UserPasswordUpdate(BaseModel):
-    password: str = Field(..., min_length=5, max_length=24, description="user password")
+class UserUpdate(BaseModel):
+    email: str | None = Field(default=None, description="user email")
+    password: str | None = Field(default=None, min_length=5, max_length=24, description="user password")
 
     class Config:
         extra = Extra.forbid
