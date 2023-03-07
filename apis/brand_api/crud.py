@@ -44,7 +44,7 @@ def update_brand(db: Session, brand) -> Brand:
     return brand
 
 
-def create_category(db: Session, category: schemas.CategoriesBase, user_id: UUID) -> Category:
+def create_category(db: Session, category: schemas.CategoriesPostBody, user_id: UUID) -> Category:
     db_category = Category(
         **category.dict(),
         created_by=user_id,
