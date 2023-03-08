@@ -41,7 +41,7 @@ def category_not_found(
 def post_category(
     data: schemas.CategoriesPostBody,
     db: Session = Depends(get_db),
-    current_user: schemas.SystemUser = Depends(get_current_user),
+    current_user: schemas.UserResponsePassword = Depends(get_current_user),
 ):
     category_name = read_category(db, param={"name": data.name})
     if category_name is not None:
@@ -84,7 +84,7 @@ def patch_category(
     data: schemas.CategoriesPatchBody,
     category_id: UUID = Depends(category_not_found),
     db: Session = Depends(get_db),
-    current_user: schemas.SystemUser = Depends(get_current_user),
+    current_user: schemas.UserResponsePassword = Depends(get_current_user),
 ):
     category = read_category(db, param={"id": category_id})
     update_data = data.dict(exclude_unset=True)
@@ -99,7 +99,7 @@ def patch_category(
 def delete_category(
     category_id: UUID = Depends(category_not_found),
     db: Session = Depends(get_db),
-    current_user: schemas.SystemUser = Depends(get_current_user),
+    current_user: schemas.UserResponsePassword = Depends(get_current_user),
 ):
     category = read_category(db, param={"id": category_id})
     deleted_dict = {"deleted_at": datetime.now(), "deleted_by": current_user.id}

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from ..crud import create_brand, read_all_brands, read_brand, read_category, update_brand
 from ..db.database import SessionLocal
 from ..dependencies import get_current_user
-from ..schemas import BrandsBase, BrandsBaseOptionalBody, ListOfBrands, SystemUser
+from ..schemas import BrandsBase, BrandsBaseOptionalBody, ListOfBrands, UserResponsePassword
 
 router = APIRouter(prefix="/brands", dependencies=[Depends(get_current_user)], tags=["Brands"])
 
@@ -30,7 +30,7 @@ def get_db():
 def post_brand(
     data: BrandsBase,
     db: Session = Depends(get_db),
-    current_user: SystemUser = Depends(get_current_user),
+    current_user: UserResponsePassword = Depends(get_current_user),
 ):
     # TODO: Can we make these two only go to the DB once instead of twice?
     brand_name = read_brand(db, param={"name": data.name})
@@ -71,7 +71,7 @@ def patch_brand(
     data: BrandsBaseOptionalBody,
     brand_id: UUID = Path(title="The id of the brand to update"),
     db: Session = Depends(get_db),
-    current_user: SystemUser = Depends(get_current_user),
+    current_user: UserResponsePassword = Depends(get_current_user),
 ):
     brand = read_brand(db, param={"id": brand_id})
     if brand is None:
@@ -92,7 +92,7 @@ def patch_brand(
 def delete_brand(
     brand_id: UUID = Path(title="The id of the brand to delete"),
     db: Session = Depends(get_db),
-    current_user: SystemUser = Depends(get_current_user),
+    current_user: UserResponsePassword = Depends(get_current_user),
 ):
     brand = read_brand(db, param={"id": brand_id})
     if brand is None:
