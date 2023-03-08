@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from ..crud import read_all_users, read_one_user, read_user, update_user
 from ..db.database import SessionLocal
 from ..dependencies import get_current_user
-from ..schemas import ListOfUsers, ListOfUsersWithEmail, SystemUser, UserUpdate
+from ..schemas import ListOfUsers, ListOfUsersEmail, UserPatchBody, UserResponsePassword
 from ..utils.password_hash import get_hashed_password
 
 router = APIRouter(prefix="/users", dependencies=[Depends(get_current_user)], tags=["Users"])
@@ -45,12 +45,12 @@ def get_user(
     return {"users": [read_one_user(db, user_id, show_deleted=show_deleted)]}
 
 
-@router.patch("/{user_id}", response_model=ListOfUsersWithEmail)
+@router.patch("/{user_id}", response_model=ListOfUsersEmail)
 def patch_user(
-    data: UserUpdate,
+    data: UserPatchBody,
     user_id: UUID = Path(title="User UUID to update"),
     db: Session = Depends(get_db),
-    current_user: SystemUser = Depends(get_current_user),
+    current_user: UserResponsePassword = Depends(get_current_user),
 ):
     user = read_user(db, param={"id": user_id})
     if user is None:
@@ -70,7 +70,7 @@ def patch_user(
 def delete_user(
     user_id: UUID = Path(title="The id of the user to delete"),
     db: Session = Depends(get_db),
-    current_user: SystemUser = Depends(get_current_user),
+    current_user: UserResponsePassword = Depends(get_current_user),
 ):
     user = read_user(db, param={"id": user_id})
     if user is None:

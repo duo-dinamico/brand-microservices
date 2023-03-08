@@ -21,7 +21,7 @@ methods_users_id = [client.post]
 def test_success_user_creation(db_session):
     pattern = "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89aAbB][a-f0-9]{3}-[a-f0-9]{12}$"
     response = client.post(
-        "/signup", json={"username": "newUser", "email": "newemail@duodinamico.online", "password": "newpassword"}
+        "/signup", json={"username": "newUser", "email": "newemail@duodinamico.online", "password": "NewPassword1"}
     )
     assert response.status_code == 201
     for res in response.json()["users"]:
@@ -35,7 +35,7 @@ def test_success_user_creation(db_session):
 @pytest.mark.unit
 def test_success_user_creation_without_email(db_session):
     pattern = "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89aAbB][a-f0-9]{3}-[a-f0-9]{12}$"
-    response = client.post("/signup", json={"username": "newUser", "password": "newpassword"})
+    response = client.post("/signup", json={"username": "newUser", "password": "NewPassword1"})
     assert response.status_code == 201
     for res in response.json()["users"]:
         assert res["username"] == "newUser"
@@ -76,7 +76,7 @@ def test_success_users_read_non_deleted(token_generator, delete_user):
 
 @pytest.mark.unit
 def test_success_user_login(create_valid_user):
-    response = client.post("/login", data={"username": "validUser", "password": "validpassword"})
+    response = client.post("/login", data={"username": "validUser", "password": "ValidPassword1"})
     assert response.status_code == 200
 
 
@@ -190,7 +190,7 @@ def test_error_not_authorized_patch_users_id() -> None:
 @pytest.mark.unit
 def test_error_username_exists(create_valid_user):
     response = client.post(
-        "/signup", json={"username": "validUser", "email": "newemail@duodinamico.online", "password": "newpassword"}
+        "/signup", json={"username": "validUser", "email": "newemail@duodinamico.online", "password": "NewPassword1"}
     )
     assert response.status_code == 400
     assert response.json()["detail"] == "User with this username already exist"
@@ -199,7 +199,7 @@ def test_error_username_exists(create_valid_user):
 @pytest.mark.unit
 def test_error_email_exists(create_valid_user_with_email):
     response = client.post(
-        "/signup", json={"username": "newuser", "email": "validemail@duodinamico.online", "password": "newpassword"}
+        "/signup", json={"username": "newuser", "email": "validemail@duodinamico.online", "password": "NewPassword1"}
     )
     assert response.status_code == 400
     assert response.json()["detail"] == "User with this email already exist"
@@ -236,3 +236,46 @@ def test_error_deleted_user_read(db_session, token_generator, delete_user) -> No
     response = client.get(f"/users/{user_id}", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 404
     assert response.json()["detail"] == "User not found"
+
+
+@pytest.mark.unit
+def test_error_user_creation_username_lenght_short():
+    response = client.post("/signup", json={"username": "new", "password": "newpassword"})
+    assert response.status_code == 422
+    assert response.json()["message"][0] == "username: ensure this value has at least 5 characters"
+
+
+@pytest.mark.unit
+def test_error_user_creation_username_lenght_long():
+    response = client.post("/signup", json={"username": "a" * 35, "password": "newpassword"})
+    assert response.status_code == 422
+    assert response.json()["message"][0] == "username: ensure this value has at most 16 characters"
+
+
+@pytest.mark.unit
+def test_error_user_creation_password_lenght_short():
+    response = client.post("/signup", json={"username": "newUser", "password": "new"})
+    assert response.status_code == 422
+    assert response.json()["message"][0] == "password: ensure this value has at least 5 characters"
+
+
+@pytest.mark.unit
+def test_error_user_creation_password_lenght_long():
+    response = client.post("/signup", json={"username": "newUser", "password": "a" * 35})
+    assert response.status_code == 422
+    assert response.json()["message"][0] == "password: ensure this value has at most 24 characters"
+
+
+@pytest.mark.unit
+def test_error_user_creation_password_must_contain_characters():
+    response = client.post("/signup", json={"username": "newUser", "password": "newpassword"})
+    assert response.status_code == 422
+    assert response.json()["message"][0] == "password: must contain at least 1 digit and 1 upper case."
+
+
+@pytest.mark.unit
+def test_error_user_update_empty_body(db_session, token_generator, create_valid_user):
+    user_id = db_session.query(User).first().id
+    response = client.patch(f"/users/{user_id}", headers={"Authorization": "Bearer " + token_generator}, json={})
+    assert response.status_code == 422
+    assert response.json()["message"][0] == "At least one of the keys email or password must exist."

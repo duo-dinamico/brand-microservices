@@ -7,11 +7,11 @@ from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
+from . import schemas
 from .crud import create_user, read_user
 from .db.database import SessionLocal, engine
 from .db.models import Base
 from .routers import brands, categories, users
-from .schemas import ListOfUsers, ListOfUsersWithEmail, TokenSchema, UserAuth
 from .utils.password_hash import get_hashed_password, verify_password
 from .utils.tokens import create_access_token, create_refresh_token
 
@@ -77,8 +77,10 @@ def read_root():
     pass
 
 
-@app.post("/signup", summary="Create new user", response_model=ListOfUsersWithEmail, status_code=201, tags=["Users"])
-def post_user(data: UserAuth, db: Session = Depends(get_db)):
+@app.post(
+    "/signup", summary="Create new user", response_model=schemas.ListOfUsersEmail, status_code=201, tags=["Users"]
+)
+def post_user(data: schemas.UserPostBody, db: Session = Depends(get_db)):
     username_check = read_user(db, param={"username": data.username})
     if username_check is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User with this username already exist")
@@ -90,7 +92,9 @@ def post_user(data: UserAuth, db: Session = Depends(get_db)):
     return {"users": [create_user(db, user)]}
 
 
-@app.post("/login", summary="Create access and refresh tokens for user", response_model=TokenSchema, tags=["Users"])
+@app.post(
+    "/login", summary="Create access and refresh tokens for user", response_model=schemas.TokenSchema, tags=["Users"]
+)
 def post_login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = read_user(db, param={"username": form_data.username})
     if user is None:

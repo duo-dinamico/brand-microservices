@@ -7,9 +7,9 @@ from jose import jwt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
+from . import schemas
 from .db.database import SessionLocal
 from .db.models import User
-from .schemas import SystemUser, TokenPayload
 
 reuseable_oauth = OAuth2PasswordBearer(tokenUrl="/login", scheme_name="JWT")
 
@@ -22,10 +22,12 @@ def get_db():
         db.close()
 
 
-def get_current_user(db: Session = Depends(get_db), token: str = Depends(reuseable_oauth)) -> SystemUser:
+def get_current_user(
+    db: Session = Depends(get_db), token: str = Depends(reuseable_oauth)
+) -> schemas.UserResponsePassword:
     try:
         payload = jwt.decode(token, os.getenv("JWT_SECRET_KEY"), algorithms=os.getenv("ALGORITHM"))
-        token_data = TokenPayload(**payload)
+        token_data = schemas.TokenPayload(**payload)
 
         if datetime.fromtimestamp(token_data.exp) < datetime.now():
             raise HTTPException(
@@ -48,4 +50,4 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(reuseab
             detail="Could not find user",
         )
 
-    return SystemUser(**user.__dict__)
+    return schemas.UserResponsePassword(**user.__dict__)
