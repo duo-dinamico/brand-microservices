@@ -1,4 +1,5 @@
 import json
+import tomllib
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.exceptions import HTTPException, RequestValidationError, ValidationError
@@ -18,9 +19,13 @@ from .utils.tokens import create_access_token, create_refresh_token
 Base.metadata.create_all(engine)
 db = SessionLocal()
 
+with open("pyproject.toml", "rb") as f:
+    data = tomllib.load(f)
+
+
 app = FastAPI(
     title="Brands API",
-    version="0.1.0",
+    version=data["tool"]["poetry"]["version"],
     description="<h3>An API to manage a data set related to brands that are Made in Portugal.\
         </h3><br /><h2>CAUTION: The data on this API is still in alpha and subject to being \
         deleted without prior notice. Use at your own risk.</h2>",
