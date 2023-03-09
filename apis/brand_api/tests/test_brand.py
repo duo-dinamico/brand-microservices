@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from .. import schemas
 from ..db.models import Brand, Category
 from ..main import app
-from .conftest import validate_timestamp_and_ownership
+from .conftest import validate_ownership_keys, validate_timestamp_and_ownership
 
 client = TestClient(app)
 
@@ -32,8 +32,7 @@ def test_success_brand_creation(db_session, token_generator, create_valid_catego
     )
     assert response.status_code == 201
     assert len(response.json()["brands"]) >= 1
-    for key in response.json()["brands"][0]:
-        assert key in schemas.BrandsResponse.__fields__
+    validate_ownership_keys(response.json(), "brands", schemas.BrandsResponse)
     validate_timestamp_and_ownership(response.json()["brands"], "post")
 
 
@@ -42,6 +41,7 @@ def test_success_brands_read(token_generator, create_valid_brand):
     response = client.get("/brands", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 200
     assert len(response.json()["brands"]) >= 1
+    validate_ownership_keys(response.json(), "brands", schemas.BrandsResponse)
     validate_timestamp_and_ownership(response.json()["brands"], "get")
 
 
@@ -51,6 +51,7 @@ def test_success_one_brand_read(db_session, token_generator, create_valid_brand)
     response = client.get(f"/brands/{brand_id}", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 200
     assert len(response.json()["brands"]) == 1
+    validate_ownership_keys(response.json(), "brands", schemas.BrandsResponse)
     validate_timestamp_and_ownership(response.json()["brands"], "get")
 
 
@@ -70,6 +71,7 @@ def test_success_brand_update_name(db_session, token_generator, create_valid_bra
     assert response.status_code == 200
     for res in response.json()["brands"]:
         assert res["name"] == "updatedBrandName"
+    validate_ownership_keys(response.json(), "brands", schemas.BrandsResponse)
     validate_timestamp_and_ownership(response.json()["brands"], "patch")
 
 
@@ -102,6 +104,7 @@ def test_success_brand_delete(db_session, token_generator, create_valid_brand):
     brand_id = db_session.query(Brand).first().id
     response = client.delete(f"/brands/{brand_id}", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 200
+    validate_ownership_keys(response.json(), "brands", schemas.BrandsResponse)
     validate_timestamp_and_ownership(response.json()["brands"], "delete")
     brands_list = db_session.query(Brand).all()
     assert len(brands_list) > 0

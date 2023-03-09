@@ -89,7 +89,7 @@ def patch_category(
     category = read_category(db, param={"id": category_id})
     update_data = data.dict(exclude_unset=True)
     update_data["updated_at"] = datetime.now()
-    update_data["updated_by"] = current_user.id
+    update_data["updated_by_id"] = current_user.id
     for key, value in update_data.items():
         setattr(category, key, value)
     return {"categories": [update_category(db, category)]}
@@ -102,7 +102,7 @@ def delete_category(
     current_user: schemas.UserResponsePassword = Depends(get_current_user),
 ):
     category = read_category(db, param={"id": category_id})
-    deleted_dict = {"deleted_at": datetime.now(), "deleted_by": current_user.id}
+    deleted_dict = {"deleted_at": datetime.now(), "deleted_by_id": current_user.id}
     for key, value in deleted_dict.items():
         setattr(category, key, value)
     return {"categories": [update_category(db, category)]}
