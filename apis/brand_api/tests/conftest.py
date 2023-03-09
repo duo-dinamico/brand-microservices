@@ -49,7 +49,7 @@ def token_generator(create_valid_user):
 def create_valid_category(db_session, create_valid_user):
     user_id = db_session.query(User).first().id
     db_session.add(
-        Category(name="catValidName", description="validCatDesc", price_per_category="two", created_by=user_id)
+        Category(name="catValidName", description="validCatDesc", price_per_category="two", created_by_id=user_id)
     )
     db_session.commit()
 
@@ -66,7 +66,7 @@ def create_valid_brand(db_session, create_valid_category):
             description="Desc",
             average_price="10€",
             rating=5,
-            created_by=user_id,
+            created_by_id=user_id,
         )
     )
     db_session.commit()
@@ -130,3 +130,15 @@ def validate_timestamp_and_ownership(data, method):
     for res in data:
         validate_timestamp(res, method)
         validate_ownership(res, method)
+
+
+def validate_ownership_keys(data, field, schema):
+    for res in data[field]:
+        for key, value in res.items():
+            assert key in schema.__fields__
+            if key == "created_by":
+                assert type(value) is dict
+            if key == "updated_by":
+                assert type(value) is dict or type(value) == str or value == None
+            if key == "deleted_by":
+                assert type(value) is dict or type(value) == str or value == None

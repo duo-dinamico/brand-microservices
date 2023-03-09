@@ -4,10 +4,11 @@ from uuid import uuid4
 import pytest
 from fastapi.testclient import TestClient
 
+from .. import schemas
 from ..db.models import User
 from ..main import app
 from ..utils.password_hash import verify_password
-from .conftest import validate_timestamp_and_ownership
+from .conftest import validate_ownership_keys, validate_timestamp_and_ownership
 
 client = TestClient(app)
 
@@ -27,6 +28,7 @@ def test_success_user_creation(db_session):
     for res in response.json()["users"]:
         assert res["email"] == "newemail@duodinamico.online"
         assert bool(search(pattern, res["id"])) == True
+    validate_ownership_keys(response.json(), "users", schemas.UserResponseEmail)
     validate_timestamp_and_ownership(response.json()["users"], "post")
     assert "password" not in response.json()["users"][0].keys()
     assert response.json()["users"][0]["username"] != None
@@ -41,6 +43,7 @@ def test_success_user_creation_without_email(db_session):
         assert res["username"] == "newUser"
         assert bool(search(pattern, res["id"])) == True
         assert res["email"] == None
+    validate_ownership_keys(response.json(), "users", schemas.UserResponseEmail)
     validate_timestamp_and_ownership(response.json()["users"], "post")
     assert "password" not in response.json()["users"][0].keys()
 
@@ -50,6 +53,7 @@ def test_success_users_read(create_valid_user, token_generator):
     response = client.get("/users", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 200
     assert len(response.json()["users"]) >= 1
+    validate_ownership_keys(response.json(), "users", schemas.UserResponse)
     validate_timestamp_and_ownership(response.json()["users"], "get")
     for res in response.json()["users"]:
         assert res["username"] != None
@@ -63,6 +67,7 @@ def test_success_one_user_read(db_session, create_valid_user, token_generator):
     assert response.status_code == 200
     assert len(response.json()["users"]) == 1
     assert response.json()["users"][0]["id"] == str(user_id)
+    validate_ownership_keys(response.json(), "users", schemas.UserResponse)
     validate_timestamp_and_ownership(response.json()["users"], "get")
     assert response.json()["users"][0]["username"] != None
 
@@ -85,6 +90,7 @@ def test_success_user_delete(db_session, token_generator, create_valid_user) -> 
     user_id = db_session.query(User).first().id
     response = client.delete(f"/users/{user_id}", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 200
+    validate_ownership_keys(response.json(), "users", schemas.UserResponse)
     validate_timestamp_and_ownership(response.json()["users"], "delete")
     users_list = db_session.query(User).all()
     assert len(users_list) > 0
@@ -101,6 +107,7 @@ def test_success_user_patch_password(db_session, token_generator, create_valid_u
     assert response.status_code == 200
     password_match_check = db_session.query(User).first().password
     assert verify_password("newvalidpassword", password_match_check)
+    validate_ownership_keys(response.json(), "users", schemas.UserResponseEmail)
     validate_timestamp_and_ownership(response.json()["users"], "patch")
 
 

@@ -28,7 +28,12 @@ def get_db():
     summary="Get details of all users",
 )
 def get_all_users(skip: int = 0, limit: int = 100, show_deleted: bool = False, db: Session = Depends(get_db)):
-    return {"users": read_all_users(db, skip=skip, limit=limit, show_deleted=show_deleted)}
+    response = read_all_users(db, skip=skip, limit=limit, show_deleted=show_deleted)
+    if show_deleted:
+        for res in response:
+            setattr(res, "deleted_by", res.deleted_by_id)
+
+    return {"users": response}
 
 
 @router.get(
@@ -42,7 +47,10 @@ def get_user(
     user = read_user(db, param={"id": user_id}, show_deleted=show_deleted)
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return {"users": [read_one_user(db, user_id, show_deleted=show_deleted)]}
+    response = read_one_user(db, user_id, show_deleted=show_deleted)
+    if show_deleted:
+        setattr(response, "deleted_by", response.deleted_by_id)
+    return {"users": [response]}
 
 
 @router.patch("/{user_id}", response_model=ListOfUsersEmail)
@@ -57,13 +65,13 @@ def patch_user(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     update_data = data.dict(exclude_unset=True)
     update_data["updated_at"] = datetime.now()
-    update_data["updated_by"] = current_user.id
+    update_data["updated_by_id"] = current_user.id
     for key, value in update_data.items():
         if key == "password":
             setattr(user, key, get_hashed_password(value))
         else:
             setattr(user, key, value)
-    return {"users": [update_user(db, user)]}
+    return {"users": [{**update_user(db, user).__dict__, "updated_by": user.id}]}
 
 
 @router.delete("/{user_id}", response_model=ListOfUsers)
@@ -75,7 +83,7 @@ def delete_user(
     user = read_user(db, param={"id": user_id})
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    deleted_dict = {"deleted_at": datetime.now(), "deleted_by": current_user.id}
+    deleted_dict = {"deleted_at": datetime.now(), "deleted_by_id": current_user.id}
     for key, value in deleted_dict.items():
         setattr(user, key, value)
-    return {"users": [update_user(db, user)]}
+    return {"users": [{**update_user(db, user).__dict__, "deleted_by": user.id}]}

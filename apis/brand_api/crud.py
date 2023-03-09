@@ -8,7 +8,7 @@ from .db.models import Brand, Category, User
 
 
 def create_brand(db: Session, brand: schemas.BrandsPostBody, user_id: UUID) -> Brand:
-    db_brand = Brand(**brand.dict(), created_by=user_id)
+    db_brand = Brand(**brand.dict(), created_by_id=user_id)
     db.add(db_brand)
     db.commit()
     db.refresh(db_brand)
@@ -47,7 +47,7 @@ def update_brand(db: Session, brand) -> Brand:
 def create_category(db: Session, category: schemas.CategoriesPostBody, user_id: UUID) -> Category:
     db_category = Category(
         **category.dict(),
-        created_by=user_id,
+        created_by_id=user_id,
     )
     db.add(db_category)
     db.commit()

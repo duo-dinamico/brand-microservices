@@ -24,9 +24,13 @@ class Brand(Base):
 
     category = relationship("Category", backref="brands")
 
-    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id", name="users_id_created_by"))
-    updated_by = Column(UUID(as_uuid=True), ForeignKey("users.id", name="users_id_updated_by"), default=None)
-    deleted_by = Column(UUID(as_uuid=True), ForeignKey("users.id", name="users_id_deleted_by"), default=None)
+    created_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id", name="users_id_created_by"))
+    updated_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id", name="users_id_updated_by"), default=None)
+    deleted_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id", name="users_id_deleted_by"), default=None)
+
+    created_by = relationship("User", backref="brands_created_by", foreign_keys=[created_by_id])
+    updated_by = relationship("User", backref="brands_updated_by", foreign_keys=[updated_by_id])
+    deleted_by = relationship("User", backref="brands_deleted_by", foreign_keys=[deleted_by_id])
 
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=None)
@@ -49,9 +53,13 @@ class Category(Base):
     description = Column(String)
     price_per_category = Column(Enum(MyEnum))
 
-    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id", name="users_id_created_by"))
-    updated_by = Column(UUID(as_uuid=True), ForeignKey("users.id", name="users_id_updated_by"), default=None)
-    deleted_by = Column(UUID(as_uuid=True), ForeignKey("users.id", name="users_id_deleted_by"), default=None)
+    created_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id", name="users_id_created_by"))
+    updated_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id", name="users_id_updated_by"), default=None)
+    deleted_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id", name="users_id_deleted_by"), default=None)
+
+    created_by = relationship("User", backref="categories_created_by", foreign_keys=[created_by_id])
+    updated_by = relationship("User", backref="categories_updated_by", foreign_keys=[updated_by_id])
+    deleted_by = relationship("User", backref="categories_deleted_by", foreign_keys=[deleted_by_id])
 
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=None)
@@ -66,8 +74,8 @@ class User(Base):
     email = Column(String, unique=True)
     password = Column(String)
 
-    updated_by = Column(UUID(as_uuid=True), default=None)
-    deleted_by = Column(UUID(as_uuid=True), default=None)
+    updated_by_id = Column(UUID(as_uuid=True), default=None)
+    deleted_by_id = Column(UUID(as_uuid=True), default=None)
 
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=None)
