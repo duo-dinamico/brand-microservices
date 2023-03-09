@@ -58,10 +58,10 @@ else
 	$(docker-compose) run brand_api alembic revision --autogenerate -m "$(m)" --rev-id="$(revid)"
 endif
 
-migrate: ## Run migrations upgrade using alembic
+migrate: down ## Run migrations upgrade using alembic
 	$(docker-compose) run --rm brand_api alembic upgrade head
 
-downgrade: ## Run migrations downgrade using alembic
+downgrade: down ## Run migrations downgrade using alembic
 	$(docker-compose) run --rm brand_api alembic downgrade -1
 
 help: ## Display this help message

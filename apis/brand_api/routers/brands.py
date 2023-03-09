@@ -78,7 +78,7 @@ def patch_brand(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Brand not found")
     update_data = data.dict(exclude_unset=True)
     update_data["updated_at"] = datetime.now()
-    update_data["updated_by"] = current_user.id
+    update_data["updated_by_id"] = current_user.id
     for key, value in update_data.items():
         if key == "category_id":
             category = read_category(db, param={"id": value})
@@ -97,7 +97,7 @@ def delete_brand(
     brand = read_brand(db, param={"id": brand_id})
     if brand is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Brand not found")
-    deleted_dict = {"deleted_at": datetime.now(), "deleted_by": current_user.id}
+    deleted_dict = {"deleted_at": datetime.now(), "deleted_by_id": current_user.id}
     for key, value in deleted_dict.items():
         setattr(brand, key, value)
     return {"brands": [update_brand(db, brand)]}

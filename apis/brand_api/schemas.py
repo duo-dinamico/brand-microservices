@@ -1,18 +1,37 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import ForwardRef, List, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Extra, Field, StrictInt, StrictStr, root_validator, validator
 
 from .db.models import MyEnum
 
+UserResponse = ForwardRef("UserResponse")
+
+
+class UserResponse(BaseModel):
+    id: UUID
+    username: str
+    created_at: datetime
+    updated_at: datetime | None
+    updated_by: UserResponse | UUID | None
+    deleted_at: datetime | None
+    deleted_by: UserResponse | UUID | None
+
+    class Config:
+        orm_mode = True
+
+
+UserResponse.update_forward_refs()
+
 
 class TimestampAndOwnership(BaseModel):
     created_at: datetime
+    created_by: UserResponse
     updated_at: datetime | None
-    updated_by: UUID | None
+    updated_by: UserResponse | None
     deleted_at: datetime | None
-    deleted_by: UUID | None
+    deleted_by: UserResponse | None
 
     class Config:
         orm_mode = True
@@ -23,7 +42,6 @@ class CategoriesResponse(TimestampAndOwnership):
     name: str
     description: str
     price_per_category: MyEnum
-    created_by: UUID
 
     class Config:
         orm_mode = True
@@ -82,7 +100,6 @@ class BrandsResponse(TimestampAndOwnership):
     description: str
     average_price: str
     rating: int
-    created_by: UUID
 
     class Config:
         orm_mode = True
@@ -143,14 +160,6 @@ class BrandsPatchBody(BaseModel):
         if sum([bool(v) for v in values.values()]) != 1:
             raise ValueError("At least one of the keys name or category_id must exist.")
         return values
-
-
-class UserResponse(TimestampAndOwnership):
-    id: UUID
-    username: str
-
-    class Config:
-        orm_mode = True
 
 
 class UserResponseEmail(UserResponse):

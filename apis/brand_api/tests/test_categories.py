@@ -3,9 +3,10 @@ import uuid
 import pytest
 from fastapi.testclient import TestClient
 
+from .. import schemas
 from ..db.models import Category
 from ..main import app
-from .conftest import validate_timestamp_and_ownership
+from .conftest import validate_ownership_keys, validate_timestamp_and_ownership
 
 client = TestClient(app)
 
@@ -28,6 +29,7 @@ def test_success_categories_create(token_generator):
     )
     assert response.status_code == 201
     assert len(response.json()["categories"]) >= 1
+    validate_ownership_keys(response.json(), "categories", schemas.CategoriesResponse)
     validate_timestamp_and_ownership(response.json()["categories"], "post")
 
 
@@ -36,6 +38,7 @@ def test_success_categories_read(token_generator, create_valid_category):
     response = client.get("/categories", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 200
     assert len(response.json()["categories"]) >= 1
+    validate_ownership_keys(response.json(), "categories", schemas.CategoriesResponse)
     validate_timestamp_and_ownership(response.json()["categories"], "get")
 
 
@@ -46,6 +49,7 @@ def test_success_one_category_read(db_session, token_generator, create_valid_cat
     assert response.status_code == 200
     assert len(response.json()["categories"]) == 1
     assert response.json()["categories"][0]["id"] == str(category_id)
+    validate_ownership_keys(response.json(), "categories", schemas.CategoriesResponse)
     validate_timestamp_and_ownership(response.json()["categories"], "get")
 
 
@@ -67,6 +71,7 @@ def test_success_categories_update_name(db_session, token_generator, create_vali
     assert response.status_code == 200
     for res in response.json()["categories"]:
         assert res["name"] == "updatedCategoryName"
+    validate_ownership_keys(response.json(), "categories", schemas.CategoriesResponse)
     validate_timestamp_and_ownership(response.json()["categories"], "patch")
 
 
@@ -106,6 +111,7 @@ def test_success_categories_delete(db_session, token_generator, create_valid_cat
         headers={"Authorization": "Bearer " + token_generator},
     )
     assert response.status_code == 200
+    validate_ownership_keys(response.json(), "categories", schemas.CategoriesResponse)
     validate_timestamp_and_ownership(response.json()["categories"], "delete")
     categories_list = db_session.query(Category).all()
     assert len(categories_list) > 0
