@@ -3,6 +3,7 @@ from uuid import uuid4
 import pytest
 from fastapi.testclient import TestClient
 
+from .. import schemas
 from ..db.models import Brand, Category
 from ..main import app
 from .conftest import validate_timestamp_and_ownership
@@ -31,6 +32,8 @@ def test_success_brand_creation(db_session, token_generator, create_valid_catego
     )
     assert response.status_code == 201
     assert len(response.json()["brands"]) >= 1
+    for key in response.json()["brands"][0]:
+        assert key in schemas.BrandsResponse.__fields__
     validate_timestamp_and_ownership(response.json()["brands"], "post")
 
 
@@ -72,7 +75,7 @@ def test_success_brand_update_name(db_session, token_generator, create_valid_bra
 
 @pytest.mark.unit
 def test_success_brand_update_category(db_session, token_generator, create_valid_brand):
-    responseCategory = client.post(
+    update_target_category = client.post(
         "/categories",
         headers={"Authorization": "Bearer " + token_generator},
         json={
@@ -86,11 +89,11 @@ def test_success_brand_update_category(db_session, token_generator, create_valid
     response = client.patch(
         f"/brands/{brand_id}",
         headers={"Authorization": "Bearer " + token_generator},
-        json={"category_id": str(responseCategory.json()["categories"][0]["id"])},
+        json={"category_id": str(update_target_category.json()["categories"][0]["id"])},
     )
     assert response.status_code == 200
     for res in response.json()["brands"]:
-        assert res["category_id"] == str(responseCategory.json()["categories"][0]["id"])
+        assert res["category"]["id"] == str(update_target_category.json()["categories"][0]["id"])
     validate_timestamp_and_ownership(response.json()["brands"], "patch")
 
 
@@ -216,3 +219,84 @@ def test_error_one_brand_read_deleted_category(db_session, token_generator, dele
     response = client.get(f"/brands/{brand_id}", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 404
     assert response.json()["detail"] == "Brand not found"
+
+
+@pytest.mark.unit
+def test_error_brand_creation_correct_name_type(db_session, token_generator, create_valid_category):
+    category_id = db_session.query(Category).first().id
+    response = client.post(
+        "/brands",
+        headers={"Authorization": "Bearer " + token_generator},
+        json={
+            "name": 1,
+            "category_id": str(category_id),
+        },
+    )
+    assert response.status_code == 422
+    assert response.json()["message"][0] == "name: str type expected"
+
+
+@pytest.mark.unit
+def test_error_brand_creation_correct_category_type(token_generator):
+    response = client.post(
+        "/brands",
+        headers={"Authorization": "Bearer " + token_generator},
+        json={
+            "name": "newCategory",
+            "category_id": "invalidId",
+        },
+    )
+    assert response.status_code == 422
+    assert response.json()["message"][0] == "category_id: value is not a valid uuid"
+
+
+@pytest.mark.unit
+def test_error_brand_creation_empty_body(token_generator):
+    response = client.post(
+        "/brands",
+        headers={"Authorization": "Bearer " + token_generator},
+        json={},
+    )
+    assert response.status_code == 422
+    assert response.json()["message"][0] == "name: field required"
+
+
+@pytest.mark.unit
+def test_error_brand_creation_missing_category_id(token_generator):
+    response = client.post(
+        "/brands",
+        headers={"Authorization": "Bearer " + token_generator},
+        json={"name": "newBrand"},
+    )
+    assert response.status_code == 422
+    assert response.json()["message"][0] == "category_id: field required"
+
+
+@pytest.mark.unit
+def test_error_brand_update_name_incorrect_type(db_session, token_generator, create_valid_brand):
+    brand_id = db_session.query(Brand).first().id
+    response = client.patch(
+        f"/brands/{brand_id}", headers={"Authorization": "Bearer " + token_generator}, json={"name": 5}
+    )
+    assert response.status_code == 422
+    assert response.json()["message"][0] == "name: str type expected"
+
+
+@pytest.mark.unit
+def test_error_brand_update_empty_body(db_session, token_generator, create_valid_brand):
+    brand_id = db_session.query(Brand).first().id
+    response = client.patch(f"/brands/{brand_id}", headers={"Authorization": "Bearer " + token_generator}, json={})
+    assert response.status_code == 422
+    assert response.json()["message"][0] == "At least one of the keys name or category_id must exist."
+
+
+@pytest.mark.unit
+def test_error_brand_update_empty_body(db_session, token_generator, create_valid_brand):
+    brand_id = db_session.query(Brand).first().id
+    response = client.patch(
+        f"/brands/{brand_id}",
+        headers={"Authorization": "Bearer " + token_generator},
+        json={"category_id": "invalidUUID"},
+    )
+    assert response.status_code == 422
+    assert response.json()["message"][0] == "category_id: value is not a valid uuid"

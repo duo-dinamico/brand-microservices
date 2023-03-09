@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Extra, Field, StrictStr, root_validator, validator
+from pydantic import BaseModel, Extra, Field, StrictInt, StrictStr, root_validator, validator
 
 from .db.models import MyEnum
 
@@ -51,9 +51,9 @@ class CategoriesPostBody(BaseModel):
 
 
 class CategoriesPatchBody(BaseModel):
-    name: Optional[StrictStr] = Field(default=None)
-    description: Optional[StrictStr] = Field(default=None)
-    price_per_category: Optional[MyEnum] = Field(default=None)
+    name: Optional[StrictStr]
+    description: Optional[StrictStr]
+    price_per_category: Optional[MyEnum]
 
     class Config:
         schema_extra = {
@@ -74,27 +74,15 @@ class CategoriesPatchBody(BaseModel):
         return values
 
 
-class BrandsBase(BaseModel):
+class BrandsResponse(TimestampAndOwnership):
+    id: UUID
     name: str
     website: str
-    category_id: UUID
+    category: CategoriesResponse
     description: str
     average_price: str
     rating: int
-
-    class Config:
-        orm_mode = True
-
-
-class BrandsResponse(BrandsBase):
-    id: UUID
-    category: CategoriesResponse
-    created_at: datetime
     created_by: UUID
-    updated_at: datetime | None
-    updated_by: UUID | None
-    deleted_at: datetime | None
-    deleted_by: UUID | None
 
     class Config:
         orm_mode = True
@@ -104,16 +92,57 @@ class ListOfBrands(BaseModel):
     brands: List[BrandsResponse]
 
 
-class BrandsBaseOptionalBody(BaseModel):
-    name: str | None
-    website: str | None
-    category_id: UUID | None
-    description: str | None
-    average_price: str | None
-    rating: int | None
+class BrandsPostBody(BaseModel):
+    name: StrictStr = Field(...)
+    website: Optional[StrictStr] = Field(default=None)
+    category_id: UUID = Field(...)
+    description: Optional[StrictStr] = Field(default=None)
+    average_price: Optional[StrictStr] = Field(default=None)
+    rating: Optional[StrictInt] = Field(default=None)
 
     class Config:
+        schema_extra = {
+            "example": {
+                "name": "New Brand",
+                "website": "www.brand.pt",
+                "category_id": "95ae9f54-7d51-4ab5-a636-87b2d12921ef",
+                "description": "This is an example of a new brand",
+                "average_price": "10$",
+                "rating": 5,
+            }
+        }
         orm_mode = True
+        extra = Extra.forbid
+
+
+class BrandsPatchBody(BaseModel):
+    name: Optional[StrictStr]
+    website: Optional[StrictStr]
+    category_id: Optional[UUID]
+    description: Optional[StrictStr]
+    average_price: Optional[StrictStr]
+    rating: Optional[StrictInt]
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "name": "New Brand",
+                "website": "www.brand.pt",
+                "category_id": "95ae9f54-7d51-4ab5-a636-87b2d12921ef",
+                "description": "This is an example of a new brand",
+                "average_price": "10$",
+                "rating": 5,
+            }
+        }
+        orm_mode = True
+        extra = Extra.forbid
+        validate_assignment = True
+
+    @root_validator(pre=True)
+    def validate_xor(cls, values):
+        if sum([bool(v) for v in values.values()]) != 1:
+            raise ValueError("At least one of the keys name or category_id must exist.")
+        return values
 
 
 class UserResponse(TimestampAndOwnership):
