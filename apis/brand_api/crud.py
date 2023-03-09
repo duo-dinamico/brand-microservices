@@ -7,7 +7,7 @@ from . import schemas
 from .db.models import Brand, Category, User
 
 
-def create_brand(db: Session, brand: schemas.BrandsBase, user_id: UUID) -> Brand:
+def create_brand(db: Session, brand: schemas.BrandsPostBody, user_id: UUID) -> Brand:
     db_brand = Brand(**brand.dict(), created_by=user_id)
     db.add(db_brand)
     db.commit()

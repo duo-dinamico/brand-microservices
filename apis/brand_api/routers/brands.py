@@ -4,10 +4,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Path, status
 from sqlalchemy.orm import Session
 
+from .. import schemas
 from ..crud import create_brand, read_all_brands, read_brand, read_category, update_brand
 from ..db.database import SessionLocal
 from ..dependencies import get_current_user
-from ..schemas import BrandsBase, BrandsBaseOptionalBody, ListOfBrands, SystemUser
 
 router = APIRouter(prefix="/brands", dependencies=[Depends(get_current_user)], tags=["Brands"])
 
@@ -23,14 +23,14 @@ def get_db():
 
 @router.post(
     "/",
-    response_model=ListOfBrands,
+    response_model=schemas.ListOfBrands,
     summary="Create new brand",
     status_code=201,
 )
 def post_brand(
-    data: BrandsBase,
+    data: schemas.BrandsPostBody,
     db: Session = Depends(get_db),
-    current_user: SystemUser = Depends(get_current_user),
+    current_user: schemas.UserResponsePassword = Depends(get_current_user),
 ):
     # TODO: Can we make these two only go to the DB once instead of twice?
     brand_name = read_brand(db, param={"name": data.name})
@@ -45,14 +45,14 @@ def post_brand(
     return {"brands": [create_brand(db, data, current_user.id)]}
 
 
-@router.get("/", response_model=ListOfBrands, summary="List all brands")
+@router.get("/", response_model=schemas.ListOfBrands, summary="List all brands")
 def get_all_brands(skip: int = 0, limit: int = 100, show_deleted: bool = False, db: Session = Depends(get_db)):
     return {"brands": read_all_brands(db, skip=skip, limit=limit, show_deleted=show_deleted)}
 
 
 @router.get(
     "/{brand_id}",
-    response_model=ListOfBrands,
+    response_model=schemas.ListOfBrands,
     summary="Fetch one brand by it's UUID",
 )
 def get_one_brand(
@@ -66,12 +66,12 @@ def get_one_brand(
     return {"brands": [read_brand(db, param={"id": brand_id}, show_deleted=show_deleted)]}
 
 
-@router.patch("/{brand_id}", response_model=ListOfBrands, summary="Update a brand")
+@router.patch("/{brand_id}", response_model=schemas.ListOfBrands, summary="Update a brand")
 def patch_brand(
-    data: BrandsBaseOptionalBody,
+    data: schemas.BrandsPatchBody,
     brand_id: UUID = Path(title="The id of the brand to update"),
     db: Session = Depends(get_db),
-    current_user: SystemUser = Depends(get_current_user),
+    current_user: schemas.UserResponsePassword = Depends(get_current_user),
 ):
     brand = read_brand(db, param={"id": brand_id})
     if brand is None:
@@ -88,11 +88,11 @@ def patch_brand(
     return {"brands": [update_brand(db, brand)]}
 
 
-@router.delete("/{brand_id}", response_model=ListOfBrands, summary="Delete a brand")
+@router.delete("/{brand_id}", response_model=schemas.ListOfBrands, summary="Delete a brand")
 def delete_brand(
     brand_id: UUID = Path(title="The id of the brand to delete"),
     db: Session = Depends(get_db),
-    current_user: SystemUser = Depends(get_current_user),
+    current_user: schemas.UserResponsePassword = Depends(get_current_user),
 ):
     brand = read_brand(db, param={"id": brand_id})
     if brand is None:
