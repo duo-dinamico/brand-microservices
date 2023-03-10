@@ -4,10 +4,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Path, status
 from sqlalchemy.orm import Session
 
-from ..crud import read_all_users, read_one_user, read_user, update_user
+from .. import schemas
+from ..crud import read_all_users, read_user, update_user
 from ..db.database import SessionLocal
 from ..dependencies import get_current_user
-from ..schemas import ListOfUsers, ListOfUsersEmail, UserPatchBody, UserResponsePassword
 from ..utils.password_hash import get_hashed_password
 
 router = APIRouter(prefix="/users", dependencies=[Depends(get_current_user)], tags=["Users"])
@@ -24,21 +24,17 @@ def get_db():
 
 @router.get(
     "/",
-    response_model=ListOfUsers,
+    response_model=schemas.ListOfUsers,
     summary="Get details of all users",
 )
 def get_all_users(skip: int = 0, limit: int = 100, show_deleted: bool = False, db: Session = Depends(get_db)):
     response = read_all_users(db, skip=skip, limit=limit, show_deleted=show_deleted)
-    if show_deleted:
-        for res in response:
-            setattr(res, "deleted_by", res.deleted_by_id)
-
     return {"users": response}
 
 
 @router.get(
     "/{user_id}",
-    response_model=ListOfUsers,
+    response_model=schemas.ListOfUsers,
     summary="Get details of all users",
 )
 def get_user(
@@ -47,18 +43,16 @@ def get_user(
     user = read_user(db, param={"id": user_id}, show_deleted=show_deleted)
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    response = read_one_user(db, user_id, show_deleted=show_deleted)
-    if show_deleted:
-        setattr(response, "deleted_by", response.deleted_by_id)
-    return {"users": [response]}
+
+    return {"users": [user]}
 
 
-@router.patch("/{user_id}", response_model=ListOfUsersEmail)
+@router.patch("/{user_id}", response_model=schemas.ListOfUsersEmail)
 def patch_user(
-    data: UserPatchBody,
+    data: schemas.UserPatchBody,
     user_id: UUID = Path(title="User UUID to update"),
     db: Session = Depends(get_db),
-    current_user: UserResponsePassword = Depends(get_current_user),
+    current_user: schemas.UserResponsePassword = Depends(get_current_user),
 ):
     user = read_user(db, param={"id": user_id})
     if user is None:
@@ -71,19 +65,28 @@ def patch_user(
             setattr(user, key, get_hashed_password(value))
         else:
             setattr(user, key, value)
-    return {"users": [{**update_user(db, user).__dict__, "updated_by": user.id}]}
+    update_user(db, user)
+
+    response = read_user(db, param={"id": user_id})
+
+    return {"users": [response]}
 
 
-@router.delete("/{user_id}", response_model=ListOfUsers)
+@router.delete("/{user_id}", response_model=schemas.ListOfUsers)
 def delete_user(
     user_id: UUID = Path(title="The id of the user to delete"),
     db: Session = Depends(get_db),
-    current_user: UserResponsePassword = Depends(get_current_user),
+    current_user: schemas.UserResponsePassword = Depends(get_current_user),
 ):
     user = read_user(db, param={"id": user_id})
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
     deleted_dict = {"deleted_at": datetime.now(), "deleted_by_id": current_user.id}
     for key, value in deleted_dict.items():
         setattr(user, key, value)
-    return {"users": [{**update_user(db, user).__dict__, "deleted_by": user.id}]}
+    update_user(db, user)
+
+    response = read_user(db=db, param={"id": user_id}, show_deleted=True)
+
+    return {"users": [response]}

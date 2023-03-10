@@ -1,47 +1,50 @@
 from datetime import datetime
-from typing import ForwardRef, List, Optional
+from typing import List, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Extra, Field, StrictInt, StrictStr, root_validator, validator
 
 from .db.models import MyEnum
 
-UserResponse = ForwardRef("UserResponse")
 
-
-class UserResponse(BaseModel):
+class UserBase(BaseModel):
     id: UUID
     username: str
-    created_at: datetime
-    updated_at: datetime | None
-    updated_by: UserResponse | UUID | None
-    deleted_at: datetime | None
-    deleted_by: UserResponse | UUID | None
 
     class Config:
         orm_mode = True
 
 
-UserResponse.update_forward_refs()
-
-
-class TimestampAndOwnership(BaseModel):
-    created_at: datetime
-    created_by: UserResponse
-    updated_at: datetime | None
-    updated_by: UserResponse | None
-    deleted_at: datetime | None
-    deleted_by: UserResponse | None
-
-    class Config:
-        orm_mode = True
-
-
-class CategoriesResponse(TimestampAndOwnership):
+class CategoriesBase(BaseModel):
     id: UUID
     name: str
     description: str
     price_per_category: MyEnum
+
+    class Config:
+        orm_mode = True
+
+
+class BrandsBase(BaseModel):
+    id: UUID
+    name: str
+    website: str
+    category: CategoriesBase
+    description: str
+    average_price: str
+    rating: int
+
+    class Config:
+        orm_mode = True
+
+
+class CategoriesResponse(CategoriesBase):
+    created_at: datetime
+    created_by: UserBase
+    updated_at: datetime | None
+    updated_by: UserBase | None
+    deleted_at: datetime | None
+    deleted_by: UserBase | None
 
     class Config:
         orm_mode = True
@@ -92,14 +95,13 @@ class CategoriesPatchBody(BaseModel):
         return values
 
 
-class BrandsResponse(TimestampAndOwnership):
-    id: UUID
-    name: str
-    website: str
-    category: CategoriesResponse
-    description: str
-    average_price: str
-    rating: int
+class BrandsResponse(BrandsBase):
+    created_at: datetime
+    created_by: UserBase
+    updated_at: datetime | None
+    updated_by: UserBase | None
+    deleted_at: datetime | None
+    deleted_by: UserBase | None
 
     class Config:
         orm_mode = True
@@ -162,15 +164,36 @@ class BrandsPatchBody(BaseModel):
         return values
 
 
-class UserResponseEmail(UserResponse):
-    email: Optional[str] = Field(default=None)
+class UserResponse(UserBase):
+    created_at: datetime
+    updated_at: datetime | None
+    updated_by: UserBase | None = Field(default=None)
+    deleted_at: datetime | None
+    deleted_by: UserBase | None = Field(default=None)
 
     class Config:
         orm_mode = True
 
 
-class UserResponsePassword(UserResponse):
+class UserResponseEmail(UserBase):
+    email: Optional[str] = Field(default=None)
+    created_at: datetime
+    updated_at: datetime | None
+    updated_by: UserBase | None
+    deleted_at: datetime | None
+    deleted_by: UserBase | None
+
+    class Config:
+        orm_mode = True
+
+
+class UserResponsePassword(UserBase):
     password: str
+    created_at: datetime
+    updated_at: datetime | None
+    updated_by: UserBase | None
+    deleted_at: datetime | None
+    deleted_by: UserBase | None
 
 
 class ListOfUsers(BaseModel):
