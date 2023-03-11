@@ -95,12 +95,12 @@ def update_user(db: Session, user) -> dict[str, bool]:
     db.add(user)
     db.commit()
     db.refresh(user)
-    return user
+    return db.query(User).filter(User.id == user.id).first()
 
 
 def read_user(db: Session, param: dict[str, str | UUID], show_deleted: bool = False) -> User:
     filtering_param = list(param.keys())[0]
-    response = (
+    return (
         db.query(User)
         .filter(
             getattr(User, filtering_param, None) == param.get(filtering_param),
@@ -108,18 +108,6 @@ def read_user(db: Session, param: dict[str, str | UUID], show_deleted: bool = Fa
         )
         .first()
     )
-
-    if response != None:
-        response_all = read_all_users(db, show_deleted=show_deleted)
-        users_lookup: dict = {}
-        for res in response_all:
-            users_lookup[str(res.id)] = {"id": res.id, "username": res.username}
-        if response.deleted_by_id != None:
-            setattr(response, "deleted_by", users_lookup[str(res.deleted_by_id)])
-        if response.updated_by_id != None:
-            setattr(response, "updated_by", users_lookup[str(res.updated_by_id)])
-
-    return response
 
 
 def create_user(db: Session, user) -> dict[str, str]:
@@ -132,23 +120,10 @@ def create_user(db: Session, user) -> dict[str, str]:
 
 
 def read_all_users(db: Session, skip: int = 0, limit: int = 100, show_deleted: bool = False) -> list[dict[str, str]]:
-    response = (
+    return (
         db.query(User)
         .filter(or_(User.deleted_at == None, User.deleted_at != None) if show_deleted else User.deleted_at == None)
         .offset(skip)
         .limit(limit)
         .all()
     )
-
-    if len(response) > 0:
-        users_lookup: dict = {}
-        for res in response:
-            users_lookup[str(res.id)] = {"id": res.id, "username": res.username}
-
-        for user in response:
-            if user.deleted_by_id != None:
-                setattr(user, "deleted_by", users_lookup[str(user.deleted_by_id)])
-            if user.updated_by_id != None:
-                setattr(user, "updated_by", users_lookup[str(user.updated_by_id)])
-
-    return response
