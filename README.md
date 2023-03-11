@@ -72,6 +72,18 @@ Contributions to the development are welcome. Here's how you can contribute:
 
 - [Submit bugs](https://github.com/duo-dinamico/brand-microservices/issues) and help us verify fixes.
 - [Submit pull requests](https://github.com/duo-dinamico/brand-microservices/pulls) for bug fixes and features
+  - For the submission of code, we follow a few simple rules:
+    - We always branch off from `develop` and create pull requests against `develop`. Pull requests against `main` can only come from `develop`.
+    - Branch naming should have as prefix the goal of the submission, for example if it is a new feature, it will be: `feat/<name-of-feature>`, or if related to documentation: `doc/<name-of-documentation>`. The following labels are available:
+      ```
+      enhancement: ["feature/*", "feat/*"]
+      bug: ["fix/*", "bug/*"]
+      documentation: ["doc/*", "documentation/*"]
+      workflow: ["workflow/*", "ci/*"]
+      refactor: ["refactor/*", "improve/*"]
+      release: ["release/*", "version/*"]
+      ```
+    - The title of the pull request should also follow a similar system. We always begin with the label and then a short description like `feat: the title of this pull request`
 
 ## Credits and Acknowledgments
 
