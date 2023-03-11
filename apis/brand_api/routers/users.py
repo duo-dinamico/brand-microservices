@@ -65,11 +65,8 @@ def patch_user(
             setattr(user, key, get_hashed_password(value))
         else:
             setattr(user, key, value)
-    update_user(db, user)
 
-    response = read_user(db, param={"id": user_id})
-
-    return {"users": [response]}
+    return {"users": [update_user(db, user)]}
 
 
 @router.delete("/{user_id}", response_model=schemas.ListOfUsers)
@@ -85,8 +82,5 @@ def delete_user(
     deleted_dict = {"deleted_at": datetime.now(), "deleted_by_id": current_user.id}
     for key, value in deleted_dict.items():
         setattr(user, key, value)
-    update_user(db, user)
 
-    response = read_user(db=db, param={"id": user_id}, show_deleted=True)
-
-    return {"users": [response]}
+    return {"users": [update_user(db, user)]}

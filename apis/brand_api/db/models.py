@@ -74,8 +74,10 @@ class User(Base):
     email = Column(String, unique=True)
     password = Column(String)
 
-    updated_by_id = Column(UUID(as_uuid=True), default=None)
-    deleted_by_id = Column(UUID(as_uuid=True), default=None)
+    updated_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id", name="users_id_updated_by"), default=None)
+    updated_by = relationship("User", primaryjoin="User.id==remote(User.updated_by_id)", uselist=False)
+    deleted_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id", name="users_id_deleted_by"), default=None)
+    deleted_by = relationship("User", primaryjoin="User.id==remote(User.deleted_by_id)", uselist=False)
 
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=None)
