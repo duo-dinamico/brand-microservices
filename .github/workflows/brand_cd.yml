@@ -3,6 +3,7 @@ name: brand_cd
 on:
   push:
     branches: ["main"]
+    tags: ["v*"]
 
 jobs:
   brand_cd:
@@ -10,6 +11,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      # Write the version number to myproject
+      # from the tag of current branch
+      - name: Edit Toml
+        uses: ciiiii/toml-editor@1.0.0
+        with:
+          file: "myproject.toml"
+          key: "tool.poetry.version"
+          value: "$GITHUB_REF_NAME"
+
+      # Deploy to VPS using SSH
       - name: Deploy to Server
         uses: easingthemes/ssh-deploy@v4.0.5
         env:
