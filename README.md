@@ -94,9 +94,7 @@ Contributions to the development are welcome. Here's how you can contribute:
 
 ### Authors
 
-[jcvsilva](https://github.com/jcvsilva)
-
-[joaojesus81](https://github.com/joaojesus81)
+[![picture of one of the authors](https://avatars.githubusercontent.com/u/16050048?s=50)](https://github.com/jcvsilva) [![picture of one of the authors](https://avatars.githubusercontent.com/u/67010899?s=50)](https://github.com/joaojesus81)
 
 ### Thanks
 
