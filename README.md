@@ -58,9 +58,14 @@ And initiate Poetry `poetry init`
 Open your terminal and type `make up` to deploy the development.
 You should now be able to visit [localhost:8000/docs](localhost:8000/docs) on your browser to use the documentation.
 
-Create a user to use the protected routes.
+~~Create a user to use the protected routes.~~
 
-Authorize OpenAPI and start using the API.
+### Authorize OpenAPI and start using the API.
+
+Use the trial user account to use the protected routes:
+
+- username: `trialUser`
+- password: `TrialPassword1`
 
 Alternatively, you can type `make utest` on your terminal to run the unit tests. We've tried as much as possible to make this a TDD (Test Driven Development).
 
