@@ -9,35 +9,23 @@ export PROJECT=apis/brand_api
 targets: help
 
 docker-compose := docker compose
+volume-remove := docker volume rm brand_microservices_psql_db || true
+all-dockers := $$(docker ps -a -q)
 
 up: down ## Run the application
-	ENVIRONMENT=development $(docker-compose) up --build brand_api
+	ENVIRONMENT=development $(docker-compose) -f docker-compose.dev.yaml up --build brand_api_development
 
 up-prod: ## Run the application in production
-	ENVIRONMENT=production $(docker-compose) up -d --build  brand_api_production traefik
-
-brand-cd: down ## Run the application as deamon
-	ENVIRONMENT=development $(docker-compose) up -d --build brand_api
-
-build: down ## Build the docker image
-	ENVIRONMENT=development $(docker-compose) build
-
-buildci: ## Build the ci image
-	ENVIRONMENT=test $(docker-compose) build
+	ENVIRONMENT=production $(docker-compose) -f docker-compose.prod.yaml up -d --build brand_api_production traefik
 
 down: ## Stop the application
-	ENVIRONMENT=development $(docker-compose) down && docker volume rm brand_microservices_psql_db || true
-
-test: utest itest  ## Run unit and integration tests
+	docker stop $(all-dockers) && docker rm $(all-dockers) && $(volume-remove)
 
 utest: down ## Run unit tests
-	ENVIRONMENT=test $(docker-compose) run --rm unit pytest-watch ./apis/brand_api/tests
-
-itest: down ## Run integration tests
-	ENVIRONMENT=test $(docker-compose) run --rm integration pytest-watch ./apis/brand_api/tests
+	ENVIRONMENT=test $(docker-compose) -f docker-compose.test.yaml run --rm ci pytest-watch ./apis/brand_api/tests
 
 citest: ## Run ci tests
-	ENVIRONMENT=test $(docker-compose) run --rm ci pytest ./apis/brand_api/tests
+	ENVIRONMENT=test $(docker-compose) -f docker-compose.test.yaml run --rm ci pytest ./apis/brand_api/tests
 
 check: ## Check the code base
 	poetry run black ./$(PROJECT) --check --diff --color
@@ -55,14 +43,14 @@ ifeq ($(m),)
 else ifeq ($(revid),)
 	@echo "Specify a message with m={message} and a rev-id with revid={revid} (e.g. 0001 etc.)"; exit 1
 else
-	$(docker-compose) run brand_api alembic revision --autogenerate -m "$(m)" --rev-id="$(revid)"
+	ENVIRONMENT=development $(docker-compose) -f docker-compose.dev.yaml run brand_api_development alembic revision --autogenerate -m "$(m)" --rev-id="$(revid)"
 endif
 
 migrate: down ## Run migrations upgrade using alembic
-	$(docker-compose) run --rm brand_api alembic upgrade head
+	ENVIRONMENT=development $(docker-compose) -f docker-compose.dev.yaml run --rm brand_api_development alembic upgrade head
 
 downgrade: down ## Run migrations downgrade using alembic
-	$(docker-compose) run --rm brand_api alembic downgrade -1
+	ENVIRONMENT=development $(docker-compose) -f docker-compose.dev.yaml run --rm brand_api_development alembic downgrade -1
 
 help: ## Display this help message
 	@awk -F '##' '/^[a-z_]+:[a-z ]+##/ { print "\033[34m"$$1"\033[0m" "\n" $$2 }' Makefile
