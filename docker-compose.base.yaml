@@ -19,6 +19,7 @@ services:
       - PSUSER
       - PSPASSWD
       - SQLALCHEMY_DATABASE_URL=postgresql+psycopg2://${PSUSER}:${PSPASSWD}@brand_db/brand_db_${ENVIRONMENT}
+      - ENVIRONMENT
 
   brand_db:
     image: postgres:13
