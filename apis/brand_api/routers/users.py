@@ -1,5 +1,6 @@
 from datetime import datetime
-from uuid import UUID
+from os import getenv
+from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Path, status
 from sqlalchemy.orm import Session
@@ -66,7 +67,18 @@ def patch_user(
         else:
             setattr(user, key, value)
 
-    return {"users": [update_user(db, user)]}
+    response = (
+        update_user(db, user)
+        if getenv("ENVIRONMENT") == "test"
+        else {
+            "id": uuid4(),
+            "username": "trialUser",
+            "created_at": datetime.now(),
+            "info": "Patching the trial user is currently disabled in testing.",
+        }
+    )
+
+    return {"users": [response]}
 
 
 @router.delete("/{user_id}", response_model=schemas.ListOfUsers)
@@ -83,4 +95,15 @@ def delete_user(
     for key, value in deleted_dict.items():
         setattr(user, key, value)
 
-    return {"users": [update_user(db, user)]}
+    response = (
+        update_user(db, user)
+        if getenv("ENVIRONMENT") == "test"
+        else {
+            "id": uuid4(),
+            "username": "trialUser",
+            "created_at": datetime.now(),
+            "info": "Deleting the trial user is currently disabled in testing.",
+        }
+    )
+
+    return {"users": [response]}
