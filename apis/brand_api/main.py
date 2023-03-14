@@ -1,5 +1,7 @@
 import json
+import os
 import tomllib
+from datetime import datetime
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.exceptions import HTTPException, RequestValidationError, ValidationError
@@ -11,7 +13,7 @@ from sqlalchemy.orm import Session
 from . import schemas
 from .crud import create_user, read_user
 from .db.database import SessionLocal, engine
-from .db.models import Base
+from .db.models import Base, User
 from .routers import brands, categories, users
 from .utils.password_hash import get_hashed_password, verify_password
 from .utils.tokens import create_access_token, create_refresh_token
@@ -28,7 +30,8 @@ app = FastAPI(
     version=data["tool"]["poetry"]["version"],
     description="<h3>An API to manage a data set related to brands that are Made in Portugal.\
         </h3><br /><h2>CAUTION: The data on this API is still in alpha and subject to being \
-        deleted without prior notice. Use at your own risk.</h2>",
+        deleted without prior notice. Use at your own risk.</h2><br /><h3>Current username and \
+        password for testing are: trialUser and TrialPassword1</h3>",
     redoc_url=None,
 )
 
@@ -67,6 +70,19 @@ def get_db():
         db.close()
 
 
+def create_trial_user(db: Session = Depends(get_db)):
+    user_query = db.query(User).first()
+    if user_query == None:
+        db_user = User(username="trialUser", password=get_hashed_password("TrialPassword1"), created_at=datetime.now())
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+
+
+if os.getenv("ENVIRONMENT") != "test":
+    create_trial_user(db)
+
+
 @app.on_event("shutdown")
 def close_db():
     db.close()
@@ -83,7 +99,12 @@ def read_root():
 
 
 @app.post(
-    "/signup", summary="Create new user", response_model=schemas.ListOfUsersEmail, status_code=201, tags=["Users"]
+    "/signup",
+    summary="Create new user",
+    response_model=schemas.ListOfUsersEmail,
+    status_code=201,
+    tags=["Users"],
+    include_in_schema=False,
 )
 def post_user(data: schemas.UserPostBody, db: Session = Depends(get_db)):
     username_check = read_user(db, param={"username": data.username})
@@ -98,7 +119,11 @@ def post_user(data: schemas.UserPostBody, db: Session = Depends(get_db)):
 
 
 @app.post(
-    "/login", summary="Create access and refresh tokens for user", response_model=schemas.TokenSchema, tags=["Users"]
+    "/login",
+    summary="Create access and refresh tokens for user",
+    response_model=schemas.TokenSchema,
+    tags=["Users"],
+    include_in_schema=False,
 )
 def post_login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = read_user(db, param={"username": form_data.username})
