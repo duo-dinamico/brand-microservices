@@ -1,0 +1,53 @@
+version: "3.7"
+
+name: brand_microservices
+
+services:
+  brand_api_production:
+    container_name: brand_api_production
+    extends:
+      file: docker-compose.base.yaml
+      service: brand_api_base
+    expose:
+      - 80
+    restart: always
+    build:
+      target: prod
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.fastapi.rule=Host(`brands.duodinamico.online`)"
+      - "traefik.http.routers.fastapi.tls=true"
+      - "traefik.http.routers.fastapi.tls.certresolver=letsencrypt"
+
+  brand_db:
+    container_name: brand_db_production
+    extends:
+      file: docker-compose.base.yaml
+      service: brand_db
+    environment:
+      - POSTGRES_DB=brand_db_production
+
+  traefik:
+    build:
+      context: .
+      dockerfile: Dockerfile.traefik
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik-public-certificates:/certificates"
+    environment:
+      - TFUSERNAME
+      - TFPASSWORD
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`dashboard.duodinamico.online`) && (PathPrefix(`/`))"
+      - "traefik.http.routers.dashboard.tls=true"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=${TFUSERNAME}:${TFPASSWORD}"
+
+volumes:
+  psql_db:

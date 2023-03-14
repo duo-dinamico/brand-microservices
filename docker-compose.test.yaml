@@ -1,0 +1,25 @@
+version: "3.7"
+
+name: brand_microservices
+
+services:
+  ci:
+    container_name: brand_api_ci
+    extends:
+      file: docker-compose.base.yaml
+      service: brand_api_base
+    build:
+      target: test
+    volumes:
+      - ./apis/brand_api:/home/user/apis/brand_api
+
+  brand_db:
+    container_name: brand_db_test
+    extends:
+      file: docker-compose.base.yaml
+      service: brand_db
+    environment:
+      - POSTGRES_DB=brand_db_test
+
+volumes:
+  psql_db:
