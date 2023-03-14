@@ -70,6 +70,7 @@ services:
       - PSUSER
       - PSPASSWD
       - SQLALCHEMY_DATABASE_URL=postgresql+psycopg2://${PSUSER}:${PSPASSWD}@brand_db/brand_db_${ENVIRONMENT}
+      - ENVIRONMENT
     volumes:
       - ./apis/brand_api:/home/user/apis/brand_api
 
@@ -91,6 +92,7 @@ services:
       - PSUSER
       - PSPASSWD
       - SQLALCHEMY_DATABASE_URL=postgresql+psycopg2://${PSUSER}:${PSPASSWD}@brand_db/brand_db_${ENVIRONMENT}
+      - ENVIRONMENT
     volumes:
       - ./apis/brand_api:/home/user/apis/brand_api
 

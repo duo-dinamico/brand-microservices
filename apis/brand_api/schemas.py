@@ -10,6 +10,8 @@ from .db.models import MyEnum
 class UserBase(BaseModel):
     id: UUID
     username: str
+    # For testing only
+    info: Optional[str]
 
     class Config:
         orm_mode = True
