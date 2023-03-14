@@ -1,0 +1,27 @@
+version: "3.7"
+
+name: brand_microservices
+
+services:
+  brand_api_development:
+    container_name: brand_api_development
+    extends:
+      file: docker-compose.base.yaml
+      service: brand_api_base
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./apis/brand_api:/home/user/apis/brand_api
+
+  brand_db:
+    container_name: brand_db_development
+    extends:
+      file: docker-compose.base.yaml
+      service: brand_db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=brand_db_development
+
+volumes:
+  psql_db:
