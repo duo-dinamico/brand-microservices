@@ -3,7 +3,7 @@
 name = "brand-microservices"
 
 # The version of the package. Required
-version = "0.3.6"
+version = "0.3.7"
 
 # A short description of the package. Required
 description = ""
@@ -12,7 +12,7 @@ description = ""
 license = "MIT"
 
 # The authors of the package. Required
-authors = ["duo dinamico"]
+authors = ["João Jesus <67010899+joaojesus81@users.noreply.github.com>","João Carlos Silva <jcvsilva@gmail.com>"]
 
 # The maintainers of the package. Optional
 # Maintainers may contain an email and be in the form name <email>.
@@ -67,8 +67,7 @@ markers = [
     "user: run only tests related to users.",
     "brand: run only tests related to brands.",
     "categories: run only tests related to categories.",
-    "app: run only tests related to the base functionalities."
-]
+    "app: run only tests related to the base functionalities."]
 addopts = "-v -s --strict-markers"
 log_cli = true
 log_cli_level = "INFO"
