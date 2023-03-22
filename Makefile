@@ -11,6 +11,7 @@ targets: help
 docker-compose := docker compose
 volume-remove := docker volume rm brand_microservices_psql_db || true
 all-dockers := $$(docker ps -a -q)
+pt-watch := ENVIRONMENT=test $(docker-compose) -f docker-compose.test.yaml run --rm ci pytest-watch
 
 up: down ## Run the application
 	ENVIRONMENT=development $(docker-compose) -f docker-compose.dev.yaml up --build brand_api_development
@@ -21,8 +22,20 @@ up-prod: ## Run the application in production
 down: ## Stop the application
 	docker stop $(all-dockers) && docker rm $(all-dockers) && $(volume-remove)
 
-utest: down ## Run unit tests
-	ENVIRONMENT=test $(docker-compose) -f docker-compose.test.yaml run --rm ci pytest-watch ./apis/brand_api/tests
+test: down ## Run all tests
+	$(pt-watch) .
+
+utest: down ## Run user tests
+	$(pt-watch) -- -m user .
+
+btest: down ## Run brand tests
+	$(pt-watch) -- -m brand .
+
+ctest: down ## Run categories tests
+	$(pt-watch) -- -m categories .
+
+atest: down ## Run app tests
+	$(pt-watch) -- -m app .
 
 citest: ## Run ci tests
 	ENVIRONMENT=test $(docker-compose) -f docker-compose.test.yaml run --rm ci pytest ./apis/brand_api/tests
