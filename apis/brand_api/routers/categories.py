@@ -9,7 +9,7 @@ from ..crud import create_category, read_all_categories, read_category, update_c
 from ..db.database import SessionLocal
 from ..dependencies import get_current_user
 
-router = APIRouter(prefix="/categories", dependencies=[Depends(get_current_user)], tags=["Categories"])
+router = APIRouter(prefix="/categories", tags=["Categories"])
 
 
 def get_db():
@@ -64,7 +64,6 @@ def get_all_categories(skip: int = 0, limit: int = 100, show_deleted: bool = Fal
     "/{category_id}",
     response_model=schemas.ListOfCategories,
     tags=["Categories"],
-    dependencies=[Depends(get_current_user)],
     summary="Retrieve a single category by it's UUID",
 )
 def get_category(

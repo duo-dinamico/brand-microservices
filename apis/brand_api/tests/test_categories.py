@@ -10,13 +10,12 @@ from .conftest import validate_ownership_keys, validate_timestamp_and_ownership
 
 client = TestClient(app)
 
-all_methods = [client.post, client.get, client.patch, client.patch]
 methods = [client.patch, client.put, client.delete]
 methods_category_id = [client.post]
 
 
 # DEFAULT BEHAVIOUR
-@pytest.mark.unit
+@pytest.mark.categories
 def test_success_categories_create(token_generator):
     response = client.post(
         "/categories",
@@ -33,7 +32,7 @@ def test_success_categories_create(token_generator):
     validate_timestamp_and_ownership(response.json()["categories"], "post")
 
 
-@pytest.mark.unit
+@pytest.mark.categories
 def test_success_categories_read(token_generator, create_valid_category):
     response = client.get("/categories", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 200
@@ -42,7 +41,7 @@ def test_success_categories_read(token_generator, create_valid_category):
     validate_timestamp_and_ownership(response.json()["categories"], "get")
 
 
-@pytest.mark.unit
+@pytest.mark.categories
 def test_success_one_category_read(db_session, token_generator, create_valid_category):
     category_id = db_session.query(Category).first().id
     response = client.get(f"/categories/{category_id}", headers={"Authorization": "Bearer " + token_generator})
@@ -53,14 +52,14 @@ def test_success_one_category_read(db_session, token_generator, create_valid_cat
     validate_timestamp_and_ownership(response.json()["categories"], "get")
 
 
-@pytest.mark.unit
+@pytest.mark.categories
 def test_success_categories_read_non_deleted(token_generator, delete_category):
     response = client.get("/categories", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 200
     assert len(response.json()["categories"]) == 0
 
 
-@pytest.mark.unit
+@pytest.mark.categories
 def test_success_categories_update_name(db_session, token_generator, create_valid_category):
     category_id = db_session.query(Category).first().id
     response = client.patch(
@@ -75,7 +74,7 @@ def test_success_categories_update_name(db_session, token_generator, create_vali
     validate_timestamp_and_ownership(response.json()["categories"], "patch")
 
 
-@pytest.mark.unit
+@pytest.mark.categories
 def test_success_categories_update_description(db_session, token_generator, create_valid_category):
     category_id = db_session.query(Category).first().id
     response = client.patch(
@@ -89,7 +88,7 @@ def test_success_categories_update_description(db_session, token_generator, crea
     validate_timestamp_and_ownership(response.json()["categories"], "patch")
 
 
-@pytest.mark.unit
+@pytest.mark.categories
 def test_success_categories_update_price(db_session, token_generator, create_valid_category):
     category_id = db_session.query(Category).first().id
     response = client.patch(
@@ -103,7 +102,7 @@ def test_success_categories_update_price(db_session, token_generator, create_val
     validate_timestamp_and_ownership(response.json()["categories"], "patch")
 
 
-@pytest.mark.unit
+@pytest.mark.categories
 def test_success_categories_delete(db_session, token_generator, create_valid_category):
     category_id = db_session.query(Category).first().id
     response = client.delete(
@@ -117,7 +116,7 @@ def test_success_categories_delete(db_session, token_generator, create_valid_cat
     assert len(categories_list) > 0
 
 
-@pytest.mark.unit
+@pytest.mark.categories
 def test_success_categories_read_deleted(token_generator, delete_category):
     response = client.get(
         "/categories", params={"show_deleted": True}, headers={"Authorization": "Bearer " + token_generator}
@@ -129,7 +128,7 @@ def test_success_categories_read_deleted(token_generator, delete_category):
         assert res["deleted_by"] != None
 
 
-@pytest.mark.unit
+@pytest.mark.categories
 def test_success_one_category_read_non_deleted(db_session, token_generator, delete_category):
     category_id = db_session.query(Category).first().id
     response = client.get(
@@ -145,34 +144,28 @@ def test_success_one_category_read_non_deleted(db_session, token_generator, dele
 
 
 # ERROR HANDLING
-@pytest.mark.unit
+@pytest.mark.categories
 def test_error_method_not_allowed_categories():
     for met in methods:
         response = met("/categories")
         assert response.status_code == 405
 
 
-@pytest.mark.unit
+@pytest.mark.categories
 def test_error_method_not_allowed_categories_id():
     for met in methods_category_id:
         response = met(f"/categories/{uuid.uuid4}")
         assert response.status_code == 405
 
 
-@pytest.mark.unit
+@pytest.mark.categories
 def test_error_not_authorized_categories():
-    for met in all_methods:
-        if met == client.post or met == client.get:
-            response = met("/categories")
-            assert response.status_code == 401
-            assert response.json()["detail"] == "Not authenticated"
-        if met == client.patch or met == client.delete or met == client.get:
-            response = met(f"/categories/{uuid.uuid4()}")
-            assert response.status_code == 401
-            assert response.json()["detail"] == "Not authenticated"
+    response = client.post("/categories")
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Not authenticated"
 
 
-@pytest.mark.unit
+@pytest.mark.categories
 def test_error_categories_update_nonexistent_category(token_generator, create_valid_category):
     response = client.patch(
         f"/categories/{uuid.uuid4()}",
@@ -183,7 +176,7 @@ def test_error_categories_update_nonexistent_category(token_generator, create_va
     assert response.json()["detail"] == "Category not found"
 
 
-@pytest.mark.unit
+@pytest.mark.categories
 def test_error_categories_update_wrong_price(db_session, token_generator, create_valid_category):
     category_id = db_session.query(Category).first().id
     response = client.patch(
@@ -198,14 +191,14 @@ def test_error_categories_update_wrong_price(db_session, token_generator, create
     )
 
 
-@pytest.mark.unit
+@pytest.mark.categories
 def test_error_categories_delete_nonexistent_category(token_generator):
     response = client.delete(f"/categories/{uuid.uuid4()}", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 404
     assert response.json()["detail"] == "Category not found"
 
 
-@pytest.mark.unit
+@pytest.mark.categories
 def test_error_categories_post_existing_category_name(token_generator, create_valid_category):
     response = client.post(
         "/categories",
@@ -216,7 +209,7 @@ def test_error_categories_post_existing_category_name(token_generator, create_va
     assert response.json()["detail"] == "Category with this name already exists"
 
 
-@pytest.mark.unit
+@pytest.mark.categories
 def test_error_categories_patch_deleted_category(db_session, token_generator, delete_category):
     category_id = db_session.query(Category).first().id
     response = client.patch(
@@ -228,7 +221,7 @@ def test_error_categories_patch_deleted_category(db_session, token_generator, de
     assert response.json()["detail"] == "Category not found"
 
 
-@pytest.mark.unit
+@pytest.mark.categories
 def test_error_categories_delete_deleted_category(db_session, token_generator, delete_category):
     category_id = db_session.query(Category).first().id
     response = client.delete(
@@ -239,7 +232,7 @@ def test_error_categories_delete_deleted_category(db_session, token_generator, d
     assert response.json()["detail"] == "Category not found"
 
 
-@pytest.mark.unit
+@pytest.mark.categories
 def test_error_one_category_read_deleted_category(db_session, token_generator, delete_category):
     category_id = db_session.query(Category).first().id
     response = client.get(f"/categories/{category_id}", headers={"Authorization": "Bearer " + token_generator})
@@ -247,7 +240,7 @@ def test_error_one_category_read_deleted_category(db_session, token_generator, d
     assert response.json()["detail"] == "Category not found"
 
 
-@pytest.mark.unit
+@pytest.mark.categories
 def test_error_categories_create_incorrect_type_name(token_generator):
     response = client.post(
         "/categories",
@@ -262,7 +255,7 @@ def test_error_categories_create_incorrect_type_name(token_generator):
     assert response.json()["message"][0] == "name: str type expected"
 
 
-@pytest.mark.unit
+@pytest.mark.categories
 def test_error_categories_create_incorrect_price_per_category(token_generator):
     response = client.post(
         "/categories",
@@ -280,7 +273,7 @@ def test_error_categories_create_incorrect_price_per_category(token_generator):
     )
 
 
-@pytest.mark.unit
+@pytest.mark.categories
 def test_error_categories_create_additional_keys_not_allowed(token_generator):
     response = client.post(
         "/categories",
@@ -296,7 +289,7 @@ def test_error_categories_create_additional_keys_not_allowed(token_generator):
     assert response.json()["message"][0] == "not_allowed_key: extra fields not permitted"
 
 
-@pytest.mark.unit
+@pytest.mark.categories
 def test_error_categories_update_empty_body(db_session, token_generator, create_valid_category):
     category_id = db_session.query(Category).first().id
     response = client.patch(
