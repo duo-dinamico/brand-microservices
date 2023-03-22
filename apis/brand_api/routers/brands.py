@@ -9,7 +9,7 @@ from ..crud import create_brand, read_all_brands, read_brand, read_category, upd
 from ..db.database import SessionLocal
 from ..dependencies import get_current_user
 
-router = APIRouter(prefix="/brands", dependencies=[Depends(get_current_user)], tags=["Brands"])
+router = APIRouter(prefix="/brands", tags=["Brands"])
 
 
 # Dependency
