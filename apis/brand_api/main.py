@@ -21,13 +21,10 @@ from .routers import brands, categories, users
 from .utils.password_hash import get_hashed_password, verify_password
 from .utils.tokens import create_access_token, create_refresh_token
 
-# Setup logger
-# logging.config.fileConfig("apis/brand_api/log.ini", disable_existing_loggers=False)
-
 # Create the logger
 logger = logging.getLogger(__name__)
 
-logger.info("Start of the API.")
+logger.info("---Start of the API.---")
 
 Base.metadata.create_all(engine)
 db = SessionLocal()
@@ -50,7 +47,7 @@ app = FastAPI(
 @app.exception_handler(RequestValidationError)
 @app.exception_handler(ValidationError)
 def validation_exception_handler(request, exc):
-    # print(f"The client sent invalid data!: {exc}") - Replace by logging
+    logger.debug(f"The client sent invalid data!: {exc}")
     exc_json = json.loads(exc.json())
     response = {"message": [], "data": None}
 
@@ -75,6 +72,7 @@ app.add_middleware(
 
 @app.on_event("startup")
 def get_db():
+    logger.info("Starting db connection.")
     try:
         yield db
     finally:

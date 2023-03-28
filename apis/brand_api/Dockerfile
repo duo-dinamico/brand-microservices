@@ -1,6 +1,6 @@
 FROM python:3.11-slim as base
 
-# define variable
+# define variable. Only usable during building, not when start execution.
 ARG PROJECT=apis/brand_api
 
 # this will be the working directory
