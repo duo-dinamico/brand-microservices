@@ -4,7 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from ..db.database import SessionLocal, engine
-from ..db.models import Base, Brand, Category, User
+from ..db.models import Base, Brand, Category, Role, User
 from ..main import app
 from ..utils.password_hash import get_hashed_password
 
@@ -20,6 +20,12 @@ def db_session():
     finally:
         session.close()
         Base.metadata.drop_all(engine)
+
+
+@pytest.fixture
+def create_valid_role(db_session):
+    db_session.add(Role(name="admin"))
+    db_session.commit()
 
 
 @pytest.fixture
@@ -48,9 +54,7 @@ def token_generator(create_valid_user):
 @pytest.fixture
 def create_valid_category(db_session, create_valid_user):
     user_id = db_session.query(User).first().id
-    db_session.add(
-        Category(name="catValidName", description="validCatDesc", price_per_category="two", created_by_id=user_id)
-    )
+    db_session.add(Category(name="catValidName", created_by_id=user_id))
     db_session.commit()
 
 
@@ -61,11 +65,9 @@ def create_valid_brand(db_session, create_valid_category):
     db_session.add(
         Brand(
             name="validBrandName",
-            website="www.validsite.pt",
             category_id=category_id,
             description="Desc",
-            average_price="10€",
-            rating=5,
+            average_price="medium",
             created_by_id=user_id,
         )
     )
