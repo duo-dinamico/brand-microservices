@@ -5,7 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from .. import schemas
-from ..db.models import User
+from ..db.models import Role, User
 from ..main import app
 from ..utils.password_hash import verify_password
 from .conftest import validate_ownership_keys, validate_timestamp_and_ownership
@@ -19,19 +19,27 @@ methods_users_id = [client.post]
 
 # DEFAULT BEHAVIOUR
 @pytest.mark.user
-def test_success_user_creation(db_session):
+def test_success_user_creation(db_session, create_valid_role):
+    role_id = db_session.query(Role).first().id
     pattern = "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89aAbB][a-f0-9]{3}-[a-f0-9]{12}$"
     response = client.post(
-        "/signup", json={"username": "newUser", "email": "newemail@duodinamico.online", "password": "NewPassword1"}
+        "/signup",
+        json={
+            "username": "newUser",
+            "email": "newemail@duodinamico.online",
+            "password": "NewPassword1",
+            "role_id": str(role_id),
+        },
     )
     assert response.status_code == 201
     for res in response.json()["users"]:
         assert res["email"] == "newemail@duodinamico.online"
         assert bool(search(pattern, res["id"])) == True
+        assert res["username"] != None
+        assert "password" not in res
+        assert "role" not in res
     validate_ownership_keys(response.json(), "users", schemas.UserResponseEmail)
     validate_timestamp_and_ownership(response.json()["users"], "post")
-    assert "password" not in response.json()["users"][0].keys()
-    assert response.json()["users"][0]["username"] != None
 
 
 @pytest.mark.user
@@ -43,9 +51,9 @@ def test_success_user_creation_without_email(db_session):
         assert res["username"] == "newUser"
         assert bool(search(pattern, res["id"])) == True
         assert res["email"] == None
+        assert "password" not in res
     validate_ownership_keys(response.json(), "users", schemas.UserResponseEmail)
     validate_timestamp_and_ownership(response.json()["users"], "post")
-    assert "password" not in response.json()["users"][0].keys()
 
 
 @pytest.mark.user

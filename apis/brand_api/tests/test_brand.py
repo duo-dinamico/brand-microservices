@@ -23,11 +23,9 @@ def test_success_brand_creation(db_session, token_generator, create_valid_catego
         headers={"Authorization": "Bearer " + token_generator},
         json={
             "name": "validBrandName",
-            "website": "www.validsite.pt",
             "category_id": str(category_id),
             "description": "Desc",
-            "average_price": "10€",
-            "rating": 5,
+            "average_price": "medium",
         },
     )
     assert response.status_code == 201
@@ -82,8 +80,6 @@ def test_success_brand_update_category(db_session, token_generator, create_valid
         headers={"Authorization": "Bearer " + token_generator},
         json={
             "name": "validCategoryName",
-            "description": "Desc",
-            "price_per_category": 3,
         },
     )
 
@@ -198,11 +194,9 @@ def test_error_create_brand_category_must_exist(db_session, token_generator, cre
         headers={"Authorization": "Bearer " + token_generator},
         json={
             "name": "validBrandName",
-            "website": "www.validsite.pt",
             "category_id": str(random_category_id),
             "description": "Desc",
-            "average_price": "10€",
-            "rating": 5,
+            "average_price": "medium",
         },
     )
     assert response.status_code == 404
