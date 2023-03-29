@@ -1,6 +1,4 @@
 import json
-import logging
-import logging.config
 import os
 import tomllib
 from datetime import datetime
@@ -18,11 +16,9 @@ from .crud import create_user, read_user
 from .db.database import SessionLocal, engine
 from .db.models import Base, User
 from .routers import brands, categories, users
+from .utils.logging import logger
 from .utils.password_hash import get_hashed_password, verify_password
 from .utils.tokens import create_access_token, create_refresh_token
-
-# Create the logger
-logger = logging.getLogger(__name__)
 
 logger.info("---Start of the API.---")
 
@@ -72,7 +68,6 @@ app.add_middleware(
 
 @app.on_event("startup")
 def get_db():
-    logger.info("Starting db connection.")
     try:
         yield db
     finally:

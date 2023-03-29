@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from . import schemas
 from .db.models import Brand, Category, User
+from .utils.logging import logger
 
 
 def create_brand(db: Session, brand: schemas.BrandsPostBody, user_id: UUID) -> Brand:
@@ -13,6 +14,7 @@ def create_brand(db: Session, brand: schemas.BrandsPostBody, user_id: UUID) -> B
     db.add(db_brand)
     db.commit()
     db.refresh(db_brand)
+    logger.info(f"create_brand will return: {db_brand}")
     return db_brand
 
 
