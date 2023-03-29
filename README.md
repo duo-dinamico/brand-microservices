@@ -29,8 +29,8 @@ The aim is to replace the currently used spreadsheet with a more robust system.
 ### Install
 
 - Docker
-- Python (3.7+)
-- Poetry (to manage python versions and install dependencies)
+- Python (3.11+)
+- Poetry (to manage python environments and install dependencies)
 - Make
 - IDE of your preference
 
@@ -46,6 +46,9 @@ PSPASSWD=password
 ```
 
 ### Run
+
+Make sure you have python 3.11 to run this project. We recommend using something to manage python versions.
+We like to use and recommend [pyenv](https://github.com/pyenv/pyenv)
 
 Clone the repository `git clone git@github.com:duo-dinamico/brand-microservices.git`
 
