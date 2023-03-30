@@ -15,8 +15,11 @@ from .crud import create_user, read_user
 from .db.database import SessionLocal, engine
 from .db.models import Base, User
 from .routers import brands, categories, socials, users
+from .utils.logging import logger
 from .utils.password_hash import get_hashed_password, verify_password
 from .utils.tokens import create_access_token, create_refresh_token
+
+logger.info("---Start of the API.---")
 
 Base.metadata.create_all(engine)
 db = SessionLocal()
@@ -39,7 +42,7 @@ app = FastAPI(
 @app.exception_handler(RequestValidationError)
 @app.exception_handler(ValidationError)
 def validation_exception_handler(request, exc):
-    # print(f"The client sent invalid data!: {exc}")
+    logger.debug(f"The client sent invalid data!: {exc}")
     exc_json = json.loads(exc.json())
     response = {"message": [], "data": None}
 

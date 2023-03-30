@@ -1,6 +1,6 @@
 FROM python:3.11-slim as base
 
-# define variable
+# define variable. Only usable during building, not when start execution.
 ARG PROJECT=apis/brand_api
 
 # this will be the working directory
@@ -38,7 +38,7 @@ FROM base as dev
 COPY ./$PROJECT /home/user/$PROJECT
 
 # start app with uvicorn
-CMD ["uvicorn", "apis.brand_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "apis.brand_api.main:app", "--log-config", "apis/brand_api/utils/log.ini", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
 #
 # prod target
@@ -49,7 +49,7 @@ FROM base as prod
 COPY ./$PROJECT /home/user/$PROJECT
 
 # start app with uvicorn
-CMD ["uvicorn", "apis.brand_api.main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "apis.brand_api.main:app", "--log-config", "apis/brand_api/utils/log.ini", "--host", "0.0.0.0", "--port", "80"]
 
 #
 # test target
