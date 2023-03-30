@@ -9,7 +9,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from uvicorn.logging import DefaultFormatter
 
 from . import schemas
 from .crud import create_user, read_user
