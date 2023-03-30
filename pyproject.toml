@@ -3,7 +3,7 @@
 name = "brand-microservices"
 
 # The version of the package. Required
-version = "0.3.7"
+version = "0.5.0"
 
 # A short description of the package. Required
 description = ""
@@ -67,7 +67,9 @@ markers = [
     "user: run only tests related to users.",
     "brand: run only tests related to brands.",
     "categories: run only tests related to categories.",
-    "app: run only tests related to the base functionalities."]
+    "app: run only tests related to the base functionalities.",
+    "socials: run only tests related to socials",
+    "brandsocials: run only tests related to brand socials"]
 addopts = "-v -s --strict-markers"
 log_cli = true
 log_cli_level = "INFO"

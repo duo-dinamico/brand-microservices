@@ -5,7 +5,8 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from . import schemas
-from .db.models import Brand, Category, User
+from .db.models import Brand, BrandSocial, Category, Social, User
+from .utils.logging import logger
 
 
 def create_brand(db: Session, brand: schemas.BrandsPostBody, user_id: UUID) -> Brand:
@@ -13,6 +14,7 @@ def create_brand(db: Session, brand: schemas.BrandsPostBody, user_id: UUID) -> B
     db.add(db_brand)
     db.commit()
     db.refresh(db_brand)
+    logger.info(f"create_brand will return: {db_brand}")
     return db_brand
 
 
@@ -127,3 +129,67 @@ def read_all_users(db: Session, skip: int = 0, limit: int = 100, show_deleted: b
         .limit(limit)
         .all()
     )
+
+
+def read_social(db: Session, param: dict[str, str | UUID]) -> Social:
+    filtering_param = list(param.keys())[0]
+    return db.query(Social).filter(getattr(Social, filtering_param, None) == param.get(filtering_param)).first()
+
+
+def create_social(db: Session, social: schemas.SocialsPostBody) -> Social:
+    db_social = Social(**social.dict())
+    db.add(db_social)
+    db.commit()
+    db.refresh(db_social)
+    return db_social
+
+
+def read_all_socials(db: Session, skip: int = 0, limit: int = 100) -> list[Social]:
+    return db.query(Social).offset(skip).limit(limit).all()
+
+
+def create_brand_social(
+    db: Session, brandsocial: schemas.BrandSocialsPostBody, brand_id: UUID, user_id: UUID
+) -> BrandSocial:
+    db_brandsocial = BrandSocial(**brandsocial.dict(), brand_id=brand_id, created_by_id=user_id)
+    db.add(db_brandsocial)
+    db.commit()
+    db.refresh(db_brandsocial)
+    return db_brandsocial
+
+
+def read_all_brand_socials(
+    db: Session, brand_id: UUID, skip: int = 0, limit: int = 100, show_deleted: bool = False
+) -> list[BrandSocial]:
+    return (
+        db.query(BrandSocial)
+        .filter(
+            BrandSocial.brand_id == brand_id,
+            or_(BrandSocial.deleted_at == None, BrandSocial.deleted_at != None)
+            if show_deleted
+            else BrandSocial.deleted_at == None,
+        )
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+
+
+def read_brand_socials(db: Session, brand_socials_id: UUID, show_deleted: bool = False) -> list[BrandSocial]:
+    return (
+        db.query(BrandSocial)
+        .filter(
+            BrandSocial.id == brand_socials_id,
+            or_(BrandSocial.deleted_at == None, BrandSocial.deleted_at != None)
+            if show_deleted
+            else BrandSocial.deleted_at == None,
+        )
+        .first()
+    )
+
+
+def update_brand_socials(db: Session, brand_socials) -> BrandSocial:
+    db.add(brand_socials)
+    db.commit()
+    db.refresh(brand_socials)
+    return brand_socials

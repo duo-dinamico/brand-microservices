@@ -1,4 +1,5 @@
-import uuid
+from re import search
+from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -17,17 +18,19 @@ methods_category_id = [client.post]
 # DEFAULT BEHAVIOUR
 @pytest.mark.categories
 def test_success_categories_create(token_generator):
+    pattern = "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89aAbB][a-f0-9]{3}-[a-f0-9]{12}$"
     response = client.post(
         "/categories",
         headers={"Authorization": "Bearer " + token_generator},
         json={
             "name": "validCategoryName",
-            "description": "Desc",
-            "price_per_category": 3,
         },
     )
     assert response.status_code == 201
     assert len(response.json()["categories"]) >= 1
+    for res in response.json()["categories"]:
+        assert res["name"] == "validCategoryName"
+        assert bool(search(pattern, res["id"])) == True
     validate_ownership_keys(response.json(), "categories", schemas.CategoriesResponse)
     validate_timestamp_and_ownership(response.json()["categories"], "post")
 
@@ -47,7 +50,9 @@ def test_success_one_category_read(db_session, token_generator, create_valid_cat
     response = client.get(f"/categories/{category_id}", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 200
     assert len(response.json()["categories"]) == 1
-    assert response.json()["categories"][0]["id"] == str(category_id)
+    for res in response.json()["categories"]:
+        assert res["name"] == "catValidName"
+        assert res["id"] == str(category_id)
     validate_ownership_keys(response.json(), "categories", schemas.CategoriesResponse)
     validate_timestamp_and_ownership(response.json()["categories"], "get")
 
@@ -71,34 +76,6 @@ def test_success_categories_update_name(db_session, token_generator, create_vali
     for res in response.json()["categories"]:
         assert res["name"] == "updatedCategoryName"
     validate_ownership_keys(response.json(), "categories", schemas.CategoriesResponse)
-    validate_timestamp_and_ownership(response.json()["categories"], "patch")
-
-
-@pytest.mark.categories
-def test_success_categories_update_description(db_session, token_generator, create_valid_category):
-    category_id = db_session.query(Category).first().id
-    response = client.patch(
-        f"/categories/{category_id}",
-        headers={"Authorization": "Bearer " + token_generator},
-        json={"description": "updatedDescription"},
-    )
-    assert response.status_code == 200
-    for res in response.json()["categories"]:
-        assert res["description"] == "updatedDescription"
-    validate_timestamp_and_ownership(response.json()["categories"], "patch")
-
-
-@pytest.mark.categories
-def test_success_categories_update_price(db_session, token_generator, create_valid_category):
-    category_id = db_session.query(Category).first().id
-    response = client.patch(
-        f"/categories/{category_id}",
-        headers={"Authorization": "Bearer " + token_generator},
-        json={"price_per_category": 5},
-    )
-    assert response.status_code == 200
-    for res in response.json()["categories"]:
-        assert res["price_per_category"] == 5
     validate_timestamp_and_ownership(response.json()["categories"], "patch")
 
 
@@ -154,7 +131,7 @@ def test_error_method_not_allowed_categories():
 @pytest.mark.categories
 def test_error_method_not_allowed_categories_id():
     for met in methods_category_id:
-        response = met(f"/categories/{uuid.uuid4}")
+        response = met(f"/categories/{uuid4()}")
         assert response.status_code == 405
 
 
@@ -168,7 +145,7 @@ def test_error_not_authorized_categories():
 @pytest.mark.categories
 def test_error_categories_update_nonexistent_category(token_generator, create_valid_category):
     response = client.patch(
-        f"/categories/{uuid.uuid4()}",
+        f"/categories/{uuid4()}",
         headers={"Authorization": "Bearer " + token_generator},
         json={"name": "updatedCategoryName"},
     )
@@ -177,23 +154,8 @@ def test_error_categories_update_nonexistent_category(token_generator, create_va
 
 
 @pytest.mark.categories
-def test_error_categories_update_wrong_price(db_session, token_generator, create_valid_category):
-    category_id = db_session.query(Category).first().id
-    response = client.patch(
-        f"/categories/{category_id}",
-        headers={"Authorization": "Bearer " + token_generator},
-        json={"price_per_category": 8},
-    )
-    assert response.status_code == 422
-    assert (
-        response.json()["message"][0]
-        == "price_per_category: value is not a valid enumeration member; permitted: 1, 2, 3, 4, 5"
-    )
-
-
-@pytest.mark.categories
 def test_error_categories_delete_nonexistent_category(token_generator):
-    response = client.delete(f"/categories/{uuid.uuid4()}", headers={"Authorization": "Bearer " + token_generator})
+    response = client.delete(f"/categories/{uuid4()}", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 404
     assert response.json()["detail"] == "Category not found"
 
@@ -203,7 +165,7 @@ def test_error_categories_post_existing_category_name(token_generator, create_va
     response = client.post(
         "/categories",
         headers={"Authorization": "Bearer " + token_generator},
-        json={"name": "catValidName", "price_per_category": 1},
+        json={"name": "catValidName"},
     )
     assert response.status_code == 422
     assert response.json()["detail"] == "Category with this name already exists"
@@ -256,32 +218,12 @@ def test_error_categories_create_incorrect_type_name(token_generator):
 
 
 @pytest.mark.categories
-def test_error_categories_create_incorrect_price_per_category(token_generator):
-    response = client.post(
-        "/categories",
-        headers={"Authorization": "Bearer " + token_generator},
-        json={
-            "name": "validName",
-            "description": "Desc",
-            "price_per_category": "3",
-        },
-    )
-    assert response.status_code == 422
-    assert (
-        response.json()["message"][0]
-        == "price_per_category: value is not a valid enumeration member; permitted: 1, 2, 3, 4, 5"
-    )
-
-
-@pytest.mark.categories
 def test_error_categories_create_additional_keys_not_allowed(token_generator):
     response = client.post(
         "/categories",
         headers={"Authorization": "Bearer " + token_generator},
         json={
             "name": "validName",
-            "description": "Desc",
-            "price_per_category": 3,
             "not_allowed_key": "should not be here",
         },
     )
@@ -298,6 +240,4 @@ def test_error_categories_update_empty_body(db_session, token_generator, create_
         json={},
     )
     assert response.status_code == 422
-    assert (
-        response.json()["message"][0] == "At least one of the keys name, description or price_per_category must exist."
-    )
+    assert response.json()["message"][0] == "name: field required"

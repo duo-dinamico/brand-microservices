@@ -8,6 +8,7 @@ from .. import schemas
 from ..crud import create_brand, read_all_brands, read_brand, read_category, update_brand
 from ..db.database import SessionLocal
 from ..dependencies import get_current_user
+from . import brand_id_socials
 
 router = APIRouter(prefix="/brands", tags=["Brands"])
 
@@ -39,9 +40,6 @@ def post_brand(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category must exist")
     if brand_name is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Brand with this name already exists")
-    brand_website = read_brand(db, param={"website": data.website})
-    if brand_website is not None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Brand with this website already exists")
     return {"brands": [create_brand(db, data, current_user.id)]}
 
 
@@ -101,3 +99,6 @@ def delete_brand(
     for key, value in deleted_dict.items():
         setattr(brand, key, value)
     return {"brands": [update_brand(db, brand)]}
+
+
+router.include_router(brand_id_socials.router)
