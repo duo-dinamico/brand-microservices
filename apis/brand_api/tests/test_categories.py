@@ -131,7 +131,7 @@ def test_error_method_not_allowed_categories():
 @pytest.mark.categories
 def test_error_method_not_allowed_categories_id():
     for met in methods_category_id:
-        response = met(f"/categories/{uuid4}")
+        response = met(f"/categories/{uuid4()}")
         assert response.status_code == 405
 
 

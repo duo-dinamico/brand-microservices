@@ -8,6 +8,7 @@ from .. import schemas
 from ..crud import create_brand, read_all_brands, read_brand, read_category, update_brand
 from ..db.database import SessionLocal
 from ..dependencies import get_current_user
+from . import brand_id_socials
 
 router = APIRouter(prefix="/brands", tags=["Brands"])
 
@@ -98,3 +99,6 @@ def delete_brand(
     for key, value in deleted_dict.items():
         setattr(brand, key, value)
     return {"brands": [update_brand(db, brand)]}
+
+
+router.include_router(brand_id_socials.router)

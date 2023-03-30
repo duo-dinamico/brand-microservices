@@ -3,7 +3,7 @@ import os
 import tomllib
 from datetime import datetime
 
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.exceptions import HTTPException, RequestValidationError, ValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -14,7 +14,7 @@ from . import schemas
 from .crud import create_user, read_user
 from .db.database import SessionLocal, engine
 from .db.models import Base, User
-from .routers import brands, categories, users
+from .routers import brands, categories, socials, users
 from .utils.password_hash import get_hashed_password, verify_password
 from .utils.tokens import create_access_token, create_refresh_token
 
@@ -39,7 +39,7 @@ app = FastAPI(
 @app.exception_handler(RequestValidationError)
 @app.exception_handler(ValidationError)
 def validation_exception_handler(request, exc):
-    # print(f"The client sent invalid data!: {exc}") - Replace by logging
+    # print(f"The client sent invalid data!: {exc}")
     exc_json = json.loads(exc.json())
     response = {"message": [], "data": None}
 
@@ -88,9 +88,10 @@ def close_db():
     db.close()
 
 
-app.include_router(brands.router)
-app.include_router(categories.router)
 app.include_router(users.router)
+app.include_router(categories.router)
+app.include_router(socials.router)
+app.include_router(brands.router)
 
 
 @app.get("/", status_code=405, include_in_schema=False)

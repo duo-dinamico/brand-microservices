@@ -37,6 +37,12 @@ ctest: down ## Run categories tests
 atest: down ## Run app tests
 	$(pt-watch) -- -m app .
 
+stest: down ## Run socials tests
+	$(pt-watch) -- -m socials .
+
+bstest: down ## Run brand socials tests
+	$(pt-watch) -- -m brandsocials .
+
 citest: ## Run ci tests
 	ENVIRONMENT=test $(docker-compose) -f docker-compose.test.yaml run --rm ci pytest ./apis/brand_api/tests
 

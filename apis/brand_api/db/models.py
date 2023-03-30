@@ -110,7 +110,9 @@ class BrandSocial(Base):
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     brand_id: Mapped[UUID] = mapped_column(ForeignKey("brands.id"))
+    brand: Mapped["Brand"] = relationship("Brand", backref="brands_socials_brand", foreign_keys=[brand_id])
     social_id: Mapped[UUID] = mapped_column(ForeignKey("socials.id"))
+    social: Mapped["Social"] = relationship("Social", backref="brands_socials_social", foreign_keys=[social_id])
     UniqueConstraint("brand_id", "social_id", name="brand_social")
     address: Mapped[str] = mapped_column(unique=True)
 

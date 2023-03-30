@@ -36,6 +36,92 @@ class BrandsBase(BaseModel):
         orm_mode = True
 
 
+class SocialsBase(BaseModel):
+    id: UUID
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
+class BrandSocialsBase(BaseModel):
+    id: UUID
+    brand: BrandsBase
+    social: SocialsBase
+    address: str
+
+    class Config:
+        orm_mode = True
+
+
+class ListOfSocials(BaseModel):
+    socials: List[SocialsBase]
+
+
+class SocialsPostBody(BaseModel):
+    name: StrictStr = Field(...)
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "name": "Website",
+            }
+        }
+        orm_mode = True
+        extra = Extra.forbid
+
+
+class BrandSocialsResponse(BrandSocialsBase):
+    created_at: datetime
+    created_by: UserBase
+    updated_at: datetime | None
+    updated_by: UserBase | None
+    deleted_at: datetime | None
+    deleted_by: UserBase | None
+
+    class Config:
+        orm_mode = True
+
+
+class ListOfBrandSocials(BaseModel):
+    socials: List[BrandSocialsResponse]
+
+
+class BrandSocialsPostBody(BaseModel):
+    social_id: UUID = Field(...)
+    address: StrictStr = Field(...)
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "brand_id": "95ee9efd-bec2-4e7a-8ac8-3be2a6c2e1cb",
+                "social_id": "dd57c7fd-a92f-42f1-891d-988803e4a878",
+                "address": "www.website.com",
+            }
+        }
+        orm_mode = True
+        extra = Extra.forbid
+
+
+class BrandSocialsPatchBody(BaseModel):
+    social_id: Optional[UUID] = Field(default=None)
+    address: Optional[StrictStr] = Field(default=None)
+
+    class Config:
+        schema_extra = {
+            "example": {"social_id": "2162262c-2a94-4872-b862-0b42e03146c0", "address": "www.otherwebsite.com"}
+        }
+        orm_mode = True
+        extra = Extra.forbid
+        validate_assignment = True
+
+    @root_validator(pre=True)
+    def validate_xor(cls, values):
+        if sum([bool(v) for v in values.values()]) != 1:
+            raise ValueError("At least one of the keys social_id or address must exist.")
+        return values
+
+
 class CategoriesResponse(CategoriesBase):
     created_at: datetime
     created_by: UserBase
