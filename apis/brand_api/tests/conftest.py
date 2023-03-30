@@ -4,7 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from ..db.database import SessionLocal, engine
-from ..db.models import Base, Brand, Category, Role, User
+from ..db.models import Base, Brand, BrandSocial, Category, Role, Social, User
 from ..main import app
 from ..utils.password_hash import get_hashed_password
 
@@ -25,6 +25,12 @@ def db_session():
 @pytest.fixture
 def create_valid_role(db_session):
     db_session.add(Role(name="admin"))
+    db_session.commit()
+
+
+@pytest.fixture
+def create_valid_social(db_session):
+    db_session.add(Social(name="Website"))
     db_session.commit()
 
 
@@ -75,6 +81,17 @@ def create_valid_brand(db_session, create_valid_category):
 
 
 @pytest.fixture
+def create_valid_brand_social(db_session, create_valid_brand, create_valid_social):
+    brand_id = db_session.query(Brand).first().id
+    social_id = db_session.query(Social).first().id
+    user_id = db_session.query(User).first().id
+    db_session.add(
+        BrandSocial(brand_id=brand_id, social_id=social_id, address="www.website.com", created_by_id=user_id)
+    )
+    db_session.commit()
+
+
+@pytest.fixture
 def delete_category(db_session, create_valid_category, token_generator):
     category_id = db_session.query(Category).first().id
     return client.delete(f"/categories/{category_id}", headers={"Authorization": "Bearer " + token_generator})
@@ -90,6 +107,15 @@ def delete_brand(db_session, create_valid_brand, token_generator):
 def delete_user(db_session, create_valid_user, token_generator):
     user_id = db_session.query(User).first().id
     return client.delete(f"/users/{user_id}", headers={"Authorization": "Bearer " + token_generator})
+
+
+@pytest.fixture
+def delete_brand_social(db_session, create_valid_brand_social, token_generator):
+    brand_id = db_session.query(Brand).first().id
+    brand_socials_id = db_session.query(BrandSocial).first().id
+    return client.delete(
+        f"/brands/{brand_id}/socials/{brand_socials_id}", headers={"Authorization": "Bearer " + token_generator}
+    )
 
 
 # TODO: Validation should probably become a class with these two as methods inside to check everything in one go

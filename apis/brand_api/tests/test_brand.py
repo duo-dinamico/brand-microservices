@@ -281,7 +281,7 @@ def test_error_brand_update_empty_body(db_session, token_generator, create_valid
 
 
 @pytest.mark.brand
-def test_error_brand_update_empty_body(db_session, token_generator, create_valid_brand):
+def test_error_brand_update_category_incorrect_type(db_session, token_generator, create_valid_brand):
     brand_id = db_session.query(Brand).first().id
     response = client.patch(
         f"/brands/{brand_id}",
