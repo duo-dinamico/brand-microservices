@@ -69,6 +69,28 @@ def test_success_users_read(create_valid_user, token_generator):
 
 
 @pytest.mark.user
+def test_success_users_read_orderby_username(create_multiple_users, token_generator):
+    response = client.get(
+        "/users", params={"order_by": "username"}, headers={"Authorization": "Bearer " + token_generator}
+    )
+    assert response.status_code == 200
+    username_list = [user["username"] for user in response.json()["users"]]
+    assert sorted(username_list) == username_list
+
+
+@pytest.mark.user
+def test_success_users_read_orderby_username_desc(create_multiple_users, token_generator):
+    response = client.get(
+        "/users",
+        params={"order_by": "username", "direction": "desc"},
+        headers={"Authorization": "Bearer " + token_generator},
+    )
+    assert response.status_code == 200
+    username_list = [user["username"] for user in response.json()["users"]]
+    assert sorted(username_list, reverse=True) == username_list
+
+
+@pytest.mark.user
 def test_success_one_user_read(db_session, create_valid_user, token_generator):
     user_id = db_session.query(User).first().id
     response = client.get(f"/users/{user_id}", headers={"Authorization": "Bearer " + token_generator})
@@ -294,3 +316,28 @@ def test_error_user_update_empty_body(db_session, token_generator, create_valid_
     response = client.patch(f"/users/{user_id}", headers={"Authorization": "Bearer " + token_generator}, json={})
     assert response.status_code == 422
     assert response.json()["message"][0] == "At least one of the keys email or password must exist."
+
+
+@pytest.mark.user
+def test_error_users_read_orderby_incorrect(token_generator):
+    response = client.get(
+        "/users", params={"order_by": "wrong"}, headers={"Authorization": "Bearer " + token_generator}
+    )
+    assert response.status_code == 422
+    assert (
+        response.json()["message"][0]
+        == "order_by: value is not a valid enumeration member; permitted: 'username', 'email', 'role_id', 'created_at', 'updated_at'"
+    )
+
+
+@pytest.mark.user
+def test_error_users_read_invalid_direction(create_multiple_users, token_generator):
+    response = client.get(
+        "/users",
+        params={"direction": "sideways"},
+        headers={"Authorization": "Bearer " + token_generator},
+    )
+    assert response.status_code == 422
+    assert (
+        response.json()["message"][0] == "direction: value is not a valid enumeration member; permitted: 'asc', 'desc'"
+    )
