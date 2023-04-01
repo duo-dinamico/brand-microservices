@@ -5,6 +5,7 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import Enum, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.sql import func
 
 
 class Base(DeclarativeBase):
@@ -43,7 +44,7 @@ class User(Base):
     )
     deleted_by: Mapped["User"] = relationship("User", primaryjoin="User.id==remote(User.deleted_by_id)", uselist=False)
 
-    created_at: Mapped[datetime] = mapped_column(default=datetime.now())
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[Optional[datetime]] = mapped_column(default=None)
     deleted_at: Mapped[Optional[datetime]] = mapped_column(default=None)
 
@@ -66,7 +67,7 @@ class Category(Base):
     updated_by: Mapped["User"] = relationship("User", backref="categories_updated_by", foreign_keys=[updated_by_id])
     deleted_by: Mapped["User"] = relationship("User", backref="categories_deleted_by", foreign_keys=[deleted_by_id])
 
-    created_at: Mapped[datetime] = mapped_column(default=datetime.now())
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[Optional[datetime]] = mapped_column(default=None)
     deleted_at: Mapped[Optional[datetime]] = mapped_column(default=None)
 
@@ -100,7 +101,7 @@ class Brand(Base):
     updated_by: Mapped["User"] = relationship("User", backref="brands_updated_by", foreign_keys=[updated_by_id])
     deleted_by: Mapped["User"] = relationship("User", backref="brands_deleted_by", foreign_keys=[deleted_by_id])
 
-    created_at: Mapped[datetime] = mapped_column(default=datetime.now())
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[Optional[datetime]] = mapped_column(default=None)
     deleted_at: Mapped[Optional[datetime]] = mapped_column(default=None)
 
@@ -128,6 +129,6 @@ class BrandSocial(Base):
     updated_by: Mapped["User"] = relationship("User", backref="brands_socials_updated_by", foreign_keys=[updated_by_id])
     deleted_by: Mapped["User"] = relationship("User", backref="brands_socials_deleted_by", foreign_keys=[deleted_by_id])
 
-    created_at: Mapped[datetime] = mapped_column(default=datetime.now())
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[Optional[datetime]] = mapped_column(default=None)
     deleted_at: Mapped[Optional[datetime]] = mapped_column(default=None)
