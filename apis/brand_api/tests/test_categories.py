@@ -45,6 +45,28 @@ def test_success_categories_read(token_generator, create_valid_category):
 
 
 @pytest.mark.categories
+def test_success_categories_read_orderby_name(token_generator, create_multiple_categories):
+    response = client.get(
+        "/categories", params={"order_by": "name"}, headers={"Authorization": "Bearer " + token_generator}
+    )
+    assert response.status_code == 200
+    name_list = [user["name"] for user in response.json()["categories"]]
+    assert sorted(name_list) == name_list
+
+
+@pytest.mark.categories
+def test_success_categories_read_orderby_name_desc(token_generator, create_multiple_categories):
+    response = client.get(
+        "/categories",
+        params={"order_by": "name", "direction": "desc"},
+        headers={"Authorization": "Bearer " + token_generator},
+    )
+    assert response.status_code == 200
+    name_list = [user["name"] for user in response.json()["categories"]]
+    assert sorted(name_list, reverse=True) == name_list
+
+
+@pytest.mark.categories
 def test_success_one_category_read(db_session, token_generator, create_valid_category):
     category_id = db_session.query(Category).first().id
     response = client.get(f"/categories/{category_id}", headers={"Authorization": "Bearer " + token_generator})
@@ -241,3 +263,26 @@ def test_error_categories_update_empty_body(db_session, token_generator, create_
     )
     assert response.status_code == 422
     assert response.json()["message"][0] == "name: field required"
+
+
+@pytest.mark.categories
+def test_error_categories_read_orderby_incorrect(token_generator):
+    response = client.get(
+        "/categories", params={"order_by": "wrong"}, headers={"Authorization": "Bearer " + token_generator}
+    )
+    assert response.status_code == 422
+    assert (
+        response.json()["message"][0]
+        == "order_by: value is not a valid enumeration member; permitted: 'name', 'created_at', 'updated_at'"
+    )
+
+
+@pytest.mark.categories
+def test_error_categories_read_direction_incorrect(token_generator):
+    response = client.get(
+        "/categories", params={"direction": "sideways"}, headers={"Authorization": "Bearer " + token_generator}
+    )
+    assert response.status_code == 422
+    assert (
+        response.json()["message"][0] == "direction: value is not a valid enumeration member; permitted: 'asc', 'desc'"
+    )

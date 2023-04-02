@@ -44,6 +44,53 @@ def test_success_brands_read(token_generator, create_valid_brand):
 
 
 @pytest.mark.brand
+def test_success_brands_read_orderby_name(token_generator, create_multiple_brands):
+    response = client.get(
+        "/brands", params={"order_by": "name"}, headers={"Authorization": "Bearer " + token_generator}
+    )
+    assert response.status_code == 200
+    name_list = [user["name"] for user in response.json()["brands"]]
+    assert sorted(name_list) == name_list
+
+
+@pytest.mark.brand
+def test_success_brands_read_orderby_name_desc(token_generator, create_multiple_brands):
+    response = client.get(
+        "/brands",
+        params={"order_by": "name", "direction": "desc"},
+        headers={"Authorization": "Bearer " + token_generator},
+    )
+    assert response.status_code == 200
+    name_list = [user["name"] for user in response.json()["brands"]]
+    assert sorted(name_list, reverse=True) == name_list
+
+
+@pytest.mark.brand
+def test_success_brands_read_query_category_id(db_session, token_generator, create_multiple_brands):
+    category_id = db_session.query(Category).offset(1).first().id
+    response = client.get(
+        "/brands",
+        params={"category_id": category_id},
+        headers={"Authorization": "Bearer " + token_generator},
+    )
+    assert response.status_code == 200
+    assert len(response.json()["brands"]) == 2
+    for res in response.json()["brands"]:
+        assert res["category"]["id"] == str(category_id)
+
+
+@pytest.mark.brand
+def test_success_brands_read_query_category_id_does_not_exist(token_generator, create_multiple_brands):
+    response = client.get(
+        "/brands",
+        params={"category_id": f"{uuid4()}"},
+        headers={"Authorization": "Bearer " + token_generator},
+    )
+    assert response.status_code == 200
+    assert len(response.json()["brands"]) == 0
+
+
+@pytest.mark.brand
 def test_success_one_brand_read(db_session, token_generator, create_valid_brand):
     brand_id = db_session.query(Brand).first().id
     response = client.get(f"/brands/{brand_id}", headers={"Authorization": "Bearer " + token_generator})
@@ -287,6 +334,42 @@ def test_error_brand_update_category_incorrect_type(db_session, token_generator,
         f"/brands/{brand_id}",
         headers={"Authorization": "Bearer " + token_generator},
         json={"category_id": "invalidUUID"},
+    )
+    assert response.status_code == 422
+    assert response.json()["message"][0] == "category_id: value is not a valid uuid"
+
+
+@pytest.mark.brand
+def test_error_brands_read_orderby_incorrect(token_generator):
+    response = client.get(
+        "/brands", params={"order_by": "wrong"}, headers={"Authorization": "Bearer " + token_generator}
+    )
+    assert response.status_code == 422
+    assert (
+        response.json()["message"][0]
+        == "order_by: value is not a valid enumeration member; permitted: 'name', 'average_price', 'created_at', 'updated_at'"
+    )
+
+
+@pytest.mark.brand
+def test_error_brands_read_direction_incorrect(token_generator):
+    response = client.get(
+        "/brands",
+        params={"order_by": "name", "direction": "incorrect"},
+        headers={"Authorization": "Bearer " + token_generator},
+    )
+    assert response.status_code == 422
+    assert (
+        response.json()["message"][0] == "direction: value is not a valid enumeration member; permitted: 'asc', 'desc'"
+    )
+
+
+@pytest.mark.brand
+def test_error_brands_read_query_category_id_incorrect_type(token_generator):
+    response = client.get(
+        "/brands",
+        params={"category_id": "incorrecttype"},
+        headers={"Authorization": "Bearer " + token_generator},
     )
     assert response.status_code == 422
     assert response.json()["message"][0] == "category_id: value is not a valid uuid"

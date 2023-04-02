@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
@@ -10,6 +11,17 @@ from ..db.database import SessionLocal
 from ..dependencies import get_current_user
 
 router = APIRouter(prefix="/categories", tags=["Categories"])
+
+
+class OrderBy(str, Enum):
+    name = "name"
+    created_at = "created_at"
+    updated_at = "updated_at"
+
+
+class OrderDirection(str, Enum):
+    asc = "asc"
+    desc = "desc"
 
 
 def get_db():
@@ -56,8 +68,19 @@ def post_category(
     response_model=schemas.ListOfCategories,
     tags=["Categories"],
 )
-def get_all_categories(skip: int = 0, limit: int = 100, show_deleted: bool = False, db: Session = Depends(get_db)):
-    return {"categories": read_all_categories(db, skip=skip, limit=limit, show_deleted=show_deleted)}
+def get_all_categories(
+    skip: int = 0,
+    limit: int = 100,
+    show_deleted: bool = False,
+    order_by: OrderBy = OrderBy.created_at,
+    direction: OrderDirection = OrderDirection.asc,
+    db: Session = Depends(get_db),
+):
+    return {
+        "categories": read_all_categories(
+            db, skip=skip, limit=limit, show_deleted=show_deleted, order_by=order_by, direction=direction
+        )
+    }
 
 
 @router.get(
