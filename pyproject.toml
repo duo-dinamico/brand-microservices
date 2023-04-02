@@ -3,7 +3,7 @@
 name = "brand-microservices"
 
 # The version of the package. Required
-version = "0.5.0"
+version = "0.5.1"
 
 # A short description of the package. Required
 description = ""
