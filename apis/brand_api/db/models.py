@@ -86,6 +86,10 @@ class Brand(Base):
     category_id: Mapped[UUID] = mapped_column(ForeignKey("categories.id"))
     description: Mapped[Optional[str]]
     average_price: Mapped[Optional[pyEnum]] = mapped_column(Enum(AveragePrice))
+    line_address_1: Mapped[Optional[str]]
+    line_address_2: Mapped[Optional[str]]
+    city: Mapped[Optional[str]]
+    postal_code: Mapped[Optional[str]]
 
     category: Mapped["Category"] = relationship("Category", backref="brands")
 
