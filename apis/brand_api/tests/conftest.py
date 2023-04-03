@@ -41,6 +41,14 @@ def create_valid_user(db_session):
 
 
 @pytest.fixture
+def create_multiple_users(db_session):
+    db_session.add(User(username="validUser2", password=get_hashed_password("ValidPassword2")))
+    db_session.add(User(username="validUser1", password=get_hashed_password("ValidPassword1")))
+    db_session.add(User(username="validUser3", password=get_hashed_password("ValidPassword3")))
+    db_session.commit()
+
+
+@pytest.fixture
 def create_valid_user_with_email(db_session):
     db_session.add(
         User(
@@ -65,6 +73,15 @@ def create_valid_category(db_session, create_valid_user):
 
 
 @pytest.fixture
+def create_multiple_categories(db_session, create_valid_user):
+    user_id = db_session.query(User).first().id
+    db_session.add(Category(name="catValidName3", created_by_id=user_id))
+    db_session.add(Category(name="catValidName4", created_by_id=user_id))
+    db_session.add(Category(name="catValidName1", created_by_id=user_id))
+    db_session.commit()
+
+
+@pytest.fixture
 def create_valid_brand(db_session, create_valid_category):
     category_id = db_session.query(Category).first().id
     user_id = db_session.query(User).first().id
@@ -72,6 +89,41 @@ def create_valid_brand(db_session, create_valid_category):
         Brand(
             name="validBrandName",
             category_id=category_id,
+            description="Desc",
+            average_price="medium",
+            created_by_id=user_id,
+        )
+    )
+    db_session.commit()
+
+
+@pytest.fixture
+def create_multiple_brands(db_session, create_multiple_categories):
+    category_id_1 = db_session.query(Category).first().id
+    category_id_2 = db_session.query(Category).offset(1).first().id
+    user_id = db_session.query(User).first().id
+    db_session.add(
+        Brand(
+            name="validBrandName3",
+            category_id=category_id_1,
+            description="Desc",
+            average_price="medium",
+            created_by_id=user_id,
+        )
+    )
+    db_session.add(
+        Brand(
+            name="validBrandName2",
+            category_id=category_id_2,
+            description="Desc",
+            average_price="medium",
+            created_by_id=user_id,
+        )
+    )
+    db_session.add(
+        Brand(
+            name="validBrandName5",
+            category_id=category_id_2,
             description="Desc",
             average_price="medium",
             created_by_id=user_id,

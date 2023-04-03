@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import or_
+from sqlalchemy import asc, desc, or_, select
 from sqlalchemy.orm import Session
 
 from . import schemas
@@ -20,24 +20,30 @@ def create_brand(db: Session, brand: schemas.BrandsPostBody, user_id: UUID) -> B
 
 def read_brand(db: Session, param: dict[str, str | UUID], show_deleted: bool = False) -> Brand:
     filtering_param = list(param.keys())[0]
-    return (
-        db.query(Brand)
-        .filter(
+    return db.scalars(
+        select(Brand).where(
             getattr(Brand, filtering_param, None) == param.get(filtering_param),
             or_(Brand.deleted_at == None, Brand.deleted_at != None) if show_deleted else Brand.deleted_at == None,
         )
-        .first()
-    )
+    ).first()
 
 
-def read_all_brands(db: Session, skip: int = 0, limit: int = 100, show_deleted: bool = False) -> list[Brand]:
-    return (
-        db.query(Brand)
-        .filter(or_(Brand.deleted_at == None, Brand.deleted_at != None) if show_deleted else Brand.deleted_at == None)
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
+def read_all_brands(
+    db: Session,
+    skip: int = 0,
+    limit: int = 100,
+    show_deleted: bool = False,
+    order_by: str = "created_at",
+    direction: str = "asc",
+    category_id: UUID = None,
+) -> list[Brand]:
+    filter_list = [
+        or_(Brand.deleted_at == None, Brand.deleted_at != None) if show_deleted else Brand.deleted_at == None
+    ]
+    basequery = select(Brand).order_by(asc(order_by) if direction == "asc" else desc(order_by))
+    if not category_id == None:
+        filter_list.append(Brand.category_id == category_id)
+    return db.scalars(basequery.where(*filter_list).offset(skip).limit(limit)).all()
 
 
 def update_brand(db: Session, brand) -> Brand:
@@ -58,32 +64,37 @@ def create_category(db: Session, category: schemas.CategoriesPostBody, user_id: 
     return db_category
 
 
-def read_all_categories(db: Session, skip: int = 0, limit: int = 100, show_deleted: bool = False) -> list[Category]:
-    return (
-        db.query(Category)
-        .filter(
+def read_all_categories(
+    db: Session,
+    skip: int = 0,
+    limit: int = 100,
+    show_deleted: bool = False,
+    order_by: str = "created_at",
+    direction: str = "asc",
+) -> list[Category]:
+    return db.scalars(
+        select(Category)
+        .order_by(asc(order_by) if direction == "asc" else desc(order_by))
+        .where(
             or_(Category.deleted_at == None, Category.deleted_at != None)
             if show_deleted
             else Category.deleted_at == None
         )
         .offset(skip)
         .limit(limit)
-        .all()
-    )
+    ).all()
 
 
 def read_category(db: Session, param, show_deleted: bool = False) -> Category:
     filtering_param = list(param.keys())[0]
-    return (
-        db.query(Category)
-        .filter(
+    return db.scalars(
+        select(Category).where(
             getattr(Category, filtering_param, None) == param.get(filtering_param),
             or_(Category.deleted_at == None, Category.deleted_at != None)
             if show_deleted
             else Category.deleted_at == None,
         )
-        .first()
-    )
+    ).first()
 
 
 def update_category(db: Session, category) -> Category:
@@ -97,19 +108,17 @@ def update_user(db: Session, user) -> dict[str, bool]:
     db.add(user)
     db.commit()
     db.refresh(user)
-    return db.query(User).filter(User.id == user.id).first()
+    return db.scalars(select(User).where(User.id == user.id)).first()
 
 
 def read_user(db: Session, param: dict[str, str | UUID], show_deleted: bool = False) -> User:
     filtering_param = list(param.keys())[0]
-    return (
-        db.query(User)
-        .filter(
+    return db.scalars(
+        select(User).where(
             getattr(User, filtering_param, None) == param.get(filtering_param),
             or_(User.deleted_at == None, User.deleted_at != None) if show_deleted else User.deleted_at == None,
         )
-        .first()
-    )
+    ).first()
 
 
 def create_user(db: Session, user) -> dict[str, str]:
@@ -117,23 +126,31 @@ def create_user(db: Session, user) -> dict[str, str]:
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    test = db.query(User).filter(User.id == db_user.id).first()
-    return test
+    return db_user
 
 
-def read_all_users(db: Session, skip: int = 0, limit: int = 100, show_deleted: bool = False) -> list[dict[str, str]]:
-    return (
-        db.query(User)
-        .filter(or_(User.deleted_at == None, User.deleted_at != None) if show_deleted else User.deleted_at == None)
+def read_all_users(
+    db: Session,
+    skip: int = 0,
+    limit: int = 100,
+    show_deleted: bool = False,
+    order_by: str = "created_at",
+    direction: str = "asc",
+) -> list[dict[str, str]]:
+    return db.scalars(
+        select(User)
+        .order_by(asc(order_by) if direction == "asc" else desc(order_by))
+        .where(or_(User.deleted_at == None, User.deleted_at != None) if show_deleted else User.deleted_at == None)
         .offset(skip)
         .limit(limit)
-        .all()
-    )
+    ).all()
 
 
 def read_social(db: Session, param: dict[str, str | UUID]) -> Social:
     filtering_param = list(param.keys())[0]
-    return db.query(Social).filter(getattr(Social, filtering_param, None) == param.get(filtering_param)).first()
+    return db.scalars(
+        select(Social).where(getattr(Social, filtering_param, None) == param.get(filtering_param))
+    ).first()
 
 
 def create_social(db: Session, social: schemas.SocialsPostBody) -> Social:
@@ -145,7 +162,7 @@ def create_social(db: Session, social: schemas.SocialsPostBody) -> Social:
 
 
 def read_all_socials(db: Session, skip: int = 0, limit: int = 100) -> list[Social]:
-    return db.query(Social).offset(skip).limit(limit).all()
+    return db.scalars(select(Social).offset(skip).limit(limit)).all()
 
 
 def create_brand_social(
@@ -161,9 +178,9 @@ def create_brand_social(
 def read_all_brand_socials(
     db: Session, brand_id: UUID, skip: int = 0, limit: int = 100, show_deleted: bool = False
 ) -> list[BrandSocial]:
-    return (
-        db.query(BrandSocial)
-        .filter(
+    return db.scalars(
+        select(BrandSocial)
+        .where(
             BrandSocial.brand_id == brand_id,
             or_(BrandSocial.deleted_at == None, BrandSocial.deleted_at != None)
             if show_deleted
@@ -171,21 +188,18 @@ def read_all_brand_socials(
         )
         .offset(skip)
         .limit(limit)
-        .all()
-    )
+    ).all()
 
 
 def read_brand_socials(db: Session, brand_socials_id: UUID, show_deleted: bool = False) -> list[BrandSocial]:
-    return (
-        db.query(BrandSocial)
-        .filter(
+    return db.scalars(
+        select(BrandSocial).where(
             BrandSocial.id == brand_socials_id,
             or_(BrandSocial.deleted_at == None, BrandSocial.deleted_at != None)
             if show_deleted
             else BrandSocial.deleted_at == None,
         )
-        .first()
-    )
+    ).first()
 
 
 def update_brand_socials(db: Session, brand_socials) -> BrandSocial:

@@ -1,8 +1,9 @@
 from datetime import datetime
+from enum import Enum
 from os import getenv
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Path, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from sqlalchemy.orm import Session
 
 from .. import schemas
@@ -12,6 +13,19 @@ from ..dependencies import get_current_user
 from ..utils.password_hash import get_hashed_password
 
 router = APIRouter(prefix="/users", dependencies=[Depends(get_current_user)], tags=["Users"])
+
+
+class OrderBy(str, Enum):
+    username = "username"
+    email = "email"
+    role_id = "role_id"
+    created_at = "created_at"
+    updated_at = "updated_at"
+
+
+class OrderDirection(str, Enum):
+    asc = "asc"
+    desc = "desc"
 
 
 # Dependency
@@ -28,8 +42,17 @@ def get_db():
     response_model=schemas.ListOfUsers,
     summary="Get details of all users",
 )
-def get_all_users(skip: int = 0, limit: int = 100, show_deleted: bool = False, db: Session = Depends(get_db)):
-    response = read_all_users(db, skip=skip, limit=limit, show_deleted=show_deleted)
+def get_all_users(
+    skip: int = 0,
+    limit: int = 100,
+    show_deleted: bool = False,
+    order_by: OrderBy = OrderBy.created_at,
+    direction: OrderDirection = OrderDirection.asc,
+    db: Session = Depends(get_db),
+):
+    response = read_all_users(
+        db, skip=skip, limit=limit, show_deleted=show_deleted, order_by=order_by.value, direction=direction
+    )
     return {"users": response}
 
 

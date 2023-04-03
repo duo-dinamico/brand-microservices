@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Path, status
@@ -11,6 +12,18 @@ from ..dependencies import get_current_user
 from . import brand_id_socials
 
 router = APIRouter(prefix="/brands", tags=["Brands"])
+
+
+class OrderBy(str, Enum):
+    name = "name"
+    average_price = "average_price"
+    created_at = "created_at"
+    updated_at = "updated_at"
+
+
+class OrderDirection(str, Enum):
+    asc = "asc"
+    desc = "desc"
 
 
 # Dependency
@@ -44,8 +57,26 @@ def post_brand(
 
 
 @router.get("/", response_model=schemas.ListOfBrands, summary="List all brands")
-def get_all_brands(skip: int = 0, limit: int = 100, show_deleted: bool = False, db: Session = Depends(get_db)):
-    return {"brands": read_all_brands(db, skip=skip, limit=limit, show_deleted=show_deleted)}
+def get_all_brands(
+    skip: int = 0,
+    limit: int = 100,
+    show_deleted: bool = False,
+    order_by: OrderBy = OrderBy.created_at,
+    direction: OrderDirection = OrderDirection.asc,
+    category_id: UUID = None,
+    db: Session = Depends(get_db),
+):
+    return {
+        "brands": read_all_brands(
+            db,
+            skip=skip,
+            limit=limit,
+            show_deleted=show_deleted,
+            order_by=order_by,
+            direction=direction,
+            category_id=category_id,
+        )
+    }
 
 
 @router.get(
