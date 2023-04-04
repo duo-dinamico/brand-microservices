@@ -189,7 +189,7 @@ class BrandsPostBody(BaseModel):
     name: StrictStr = Field(...)
     category_id: UUID = Field(...)
     description: Optional[StrictStr] = Field(default=None)
-    average_price: Optional[StrictStr] = Field(default=None)
+    average_price: Optional[AveragePrice] = Field(default=None)
     line_address_1: Optional[StrictStr] = Field(default=None)
     line_address_2: Optional[StrictStr] = Field(default=None)
     city: Optional[StrictStr] = Field(default=None)
@@ -208,7 +208,7 @@ class BrandsPostBody(BaseModel):
                 "name": "New Brand",
                 "category_id": "95ae9f54-7d51-4ab5-a636-87b2d12921ef",
                 "description": "This is an example of a new brand",
-                "average_price": 2,
+                "average_price": "medium",
                 "line_address_1": "22 Street",
                 "line_address_2": "More street info",
                 "city": "Porto",
@@ -223,7 +223,7 @@ class BrandsPatchBody(BaseModel):
     name: Optional[StrictStr]
     category_id: Optional[UUID]
     description: Optional[StrictStr]
-    average_price: Optional[StrictStr]
+    average_price: Optional[AveragePrice]
     line_address_1: Optional[StrictStr]
     line_address_2: Optional[StrictStr]
     city: Optional[StrictStr]
@@ -242,7 +242,7 @@ class BrandsPatchBody(BaseModel):
                 "name": "New Brand",
                 "category_id": "95ae9f54-7d51-4ab5-a636-87b2d12921ef",
                 "description": "This is an example of a new brand",
-                "average_price": 3,
+                "average_price": "high",
                 "line_address_1": "22 Street",
                 "line_address_2": "More street info",
                 "city": "Porto",

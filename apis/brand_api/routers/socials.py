@@ -6,7 +6,7 @@ from ..crud import create_social, read_all_socials, read_social
 from ..db.database import SessionLocal
 from ..dependencies import get_current_user
 
-router = APIRouter(prefix="/socials", dependencies=[Depends(get_current_user)], tags=["Socials"])
+router = APIRouter(prefix="/socials", tags=["Socials"])
 
 
 # Dependency
@@ -24,6 +24,7 @@ def get_db():
     summary="Post a new social network.",
     status_code=201,
     include_in_schema=False,
+    dependencies=[Depends(get_current_user)],
 )
 def post_social(
     data: schemas.SocialsPostBody,
