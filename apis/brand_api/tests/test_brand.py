@@ -35,6 +35,32 @@ def test_success_brand_creation(db_session, token_generator, create_valid_catego
 
 
 @pytest.mark.brand
+def test_success_brand_creation_with_location(db_session, token_generator, create_valid_category):
+    category_id = db_session.query(Category).first().id
+    post_body = {
+        "name": "validBrandName",
+        "category_id": str(category_id),
+        "average_price": "medium",
+        "line_address_1": "22 Rua no sitio",
+        "line_address_2": "Mais informacao",
+        "city": "Porto",
+        "postal_code": "4400-313",
+    }
+    response = client.post(
+        "/brands",
+        headers={"Authorization": "Bearer " + token_generator},
+        json=post_body,
+    )
+    assert response.status_code == 201
+    assert len(response.json()["brands"]) >= 1
+    for res in response.json()["brands"]:
+        assert res["line_address_1"] == post_body["line_address_1"]
+        assert res["line_address_2"] == post_body["line_address_2"]
+        assert res["city"] == post_body["city"]
+        assert res["postal_code"] == post_body["postal_code"]
+
+
+@pytest.mark.brand
 def test_success_brands_read(token_generator, create_valid_brand):
     response = client.get("/brands", headers={"Authorization": "Bearer " + token_generator})
     assert response.status_code == 200
@@ -118,6 +144,28 @@ def test_success_brand_update_name(db_session, token_generator, create_valid_bra
         assert res["name"] == "updatedBrandName"
     validate_ownership_keys(response.json(), "brands", schemas.BrandsResponse)
     validate_timestamp_and_ownership(response.json()["brands"], "patch")
+
+
+@pytest.mark.brand
+def test_success_brand_update_address(db_session, token_generator, create_valid_brand):
+    brand_id = db_session.query(Brand).first().id
+    patch_body = {
+        "line_address_1": "22 Rua no sitio",
+        "line_address_2": "Mais informacao",
+        "city": "Porto",
+        "postal_code": "4400-313",
+    }
+    response = client.patch(
+        f"/brands/{brand_id}",
+        headers={"Authorization": "Bearer " + token_generator},
+        json=patch_body,
+    )
+    assert response.status_code == 200
+    for res in response.json()["brands"]:
+        assert res["line_address_1"] == patch_body["line_address_1"]
+        assert res["line_address_2"] == patch_body["line_address_2"]
+        assert res["city"] == patch_body["city"]
+        assert res["postal_code"] == patch_body["postal_code"]
 
 
 @pytest.mark.brand
@@ -324,7 +372,7 @@ def test_error_brand_update_empty_body(db_session, token_generator, create_valid
     brand_id = db_session.query(Brand).first().id
     response = client.patch(f"/brands/{brand_id}", headers={"Authorization": "Bearer " + token_generator}, json={})
     assert response.status_code == 422
-    assert response.json()["message"][0] == "At least one of the keys name or category_id must exist."
+    assert response.json()["message"][0] == "A minimum of 1 value will be required to do the update"
 
 
 @pytest.mark.brand
@@ -373,3 +421,37 @@ def test_error_brands_read_query_category_id_incorrect_type(token_generator):
     )
     assert response.status_code == 422
     assert response.json()["message"][0] == "category_id: value is not a valid uuid"
+
+
+@pytest.mark.brand
+def test_error_brand_creation_incorrect_type_line_address(db_session, token_generator, create_valid_category):
+    category_id = db_session.query(Category).first().id
+    response = client.post(
+        "/brands",
+        headers={"Authorization": "Bearer " + token_generator},
+        json={
+            "name": "validBrandName",
+            "category_id": str(category_id),
+            "average_price": "medium",
+            "line_address_1": 22,
+        },
+    )
+    assert response.status_code == 422
+    assert response.json()["message"][0] == "line_address_1: str type expected"
+
+
+@pytest.mark.brand
+def test_error_brand_creation_incorrect_postal_code(db_session, token_generator, create_valid_category):
+    category_id = db_session.query(Category).first().id
+    response = client.post(
+        "/brands",
+        headers={"Authorization": "Bearer " + token_generator},
+        json={
+            "name": "validBrandName",
+            "category_id": str(category_id),
+            "average_price": "medium",
+            "postal_code": "45685-231",
+        },
+    )
+    assert response.status_code == 422
+    assert response.json()["message"][0] == "postal_code: must correspond to the following format '0000-000'"

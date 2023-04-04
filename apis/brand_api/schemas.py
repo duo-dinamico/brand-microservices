@@ -1,4 +1,5 @@
 from datetime import datetime
+from re import search
 from typing import List, Optional
 from uuid import UUID
 
@@ -29,8 +30,12 @@ class BrandsBase(BaseModel):
     id: UUID
     name: str
     category: CategoriesBase
-    description: str
+    description: str | None
     average_price: AveragePrice
+    line_address_1: str | None
+    line_address_2: str | None
+    city: str | None
+    postal_code: str | None
 
     class Config:
         orm_mode = True
@@ -117,7 +122,7 @@ class BrandSocialsPatchBody(BaseModel):
 
     @root_validator(pre=True)
     def validate_xor(cls, values):
-        if sum([bool(v) for v in values.values()]) != 1:
+        if sum([bool(v) for v in values.values()]) < 1:
             raise ValueError("At least one of the keys social_id or address must exist.")
         return values
 
@@ -185,6 +190,17 @@ class BrandsPostBody(BaseModel):
     category_id: UUID = Field(...)
     description: Optional[StrictStr] = Field(default=None)
     average_price: Optional[StrictStr] = Field(default=None)
+    line_address_1: Optional[StrictStr] = Field(default=None)
+    line_address_2: Optional[StrictStr] = Field(default=None)
+    city: Optional[StrictStr] = Field(default=None)
+    postal_code: Optional[StrictStr] = Field(default=None)
+
+    @validator("postal_code")
+    def validate_postal_code(cls, value):
+        pattern = "^[0-9]{4}-[0-9]{3}$"
+        if not bool(search(pattern, value)):
+            raise ValueError("must correspond to the following format '0000-000'")
+        return value
 
     class Config:
         schema_extra = {
@@ -193,6 +209,10 @@ class BrandsPostBody(BaseModel):
                 "category_id": "95ae9f54-7d51-4ab5-a636-87b2d12921ef",
                 "description": "This is an example of a new brand",
                 "average_price": 2,
+                "line_address_1": "22 Street",
+                "line_address_2": "More street info",
+                "city": "Porto",
+                "postal_code": "4400-300",
             }
         }
         orm_mode = True
@@ -204,6 +224,17 @@ class BrandsPatchBody(BaseModel):
     category_id: Optional[UUID]
     description: Optional[StrictStr]
     average_price: Optional[StrictStr]
+    line_address_1: Optional[StrictStr]
+    line_address_2: Optional[StrictStr]
+    city: Optional[StrictStr]
+    postal_code: Optional[StrictStr]
+
+    @validator("postal_code")
+    def validate_postal_code(cls, value):
+        pattern = "^[0-9]{4}-[0-9]{3}$"
+        if not bool(search(pattern, value)):
+            raise ValueError("must correspond to the following format '0000-000'")
+        return value
 
     class Config:
         schema_extra = {
@@ -212,6 +243,10 @@ class BrandsPatchBody(BaseModel):
                 "category_id": "95ae9f54-7d51-4ab5-a636-87b2d12921ef",
                 "description": "This is an example of a new brand",
                 "average_price": 3,
+                "line_address_1": "22 Street",
+                "line_address_2": "More street info",
+                "city": "Porto",
+                "postal_code": "4400-300",
             }
         }
         orm_mode = True
@@ -220,8 +255,8 @@ class BrandsPatchBody(BaseModel):
 
     @root_validator(pre=True)
     def validate_xor(cls, values):
-        if sum([bool(v) for v in values.values()]) != 1:
-            raise ValueError("At least one of the keys name or category_id must exist.")
+        if sum([bool(v) for v in values.values()]) < 1:
+            raise ValueError("A minimum of 1 value will be required to do the update")
         return values
 
 
@@ -318,7 +353,7 @@ class UserPatchBody(BaseModel):
 
     @root_validator(pre=True)
     def validate_xor(cls, values):
-        if sum([bool(v) for v in values.values()]) != 1:
+        if sum([bool(v) for v in values.values()]) < 1:
             raise ValueError("At least one of the keys email or password must exist.")
         return values
 
