@@ -133,6 +133,3 @@ psql_db/
 
 # VS code settings
 .vscode
-
-# Lock from package managers
-*.lock
