@@ -41,11 +41,12 @@ def get_db():
     "/",
     response_model=schemas.ListOfUsers,
     summary="Get details of all users",
+    responses={405: {"model": schemas.Error405}},
 )
 def get_all_users(
-    skip: int = 0,
-    limit: int = 100,
-    show_deleted: bool = False,
+    skip: int = Query(default=0, description="Amount to offset the start of the query"),
+    limit: int = Query(default=100, description="How many results to obtain per query"),
+    show_deleted: bool = Query(default=False, description="Include deleted elements in the query"),
     order_by: OrderBy = OrderBy.created_at,
     direction: OrderDirection = OrderDirection.asc,
     db: Session = Depends(get_db),
@@ -60,9 +61,12 @@ def get_all_users(
     "/{user_id}",
     response_model=schemas.ListOfUsers,
     summary="Get details of all users",
+    responses={405: {"model": schemas.Error405}},
 )
 def get_user(
-    user_id: UUID = Path(title="User UUID to fetch"), show_deleted: bool = False, db: Session = Depends(get_db)
+    user_id: UUID = Path(description="User id to fetch"),
+    show_deleted: bool = Query(default=False, description="Include deleted elements in the query"),
+    db: Session = Depends(get_db),
 ):
     user = read_user(db, param={"id": user_id}, show_deleted=show_deleted)
     if user is None:
@@ -71,10 +75,15 @@ def get_user(
     return {"users": [user]}
 
 
-@router.patch("/{user_id}", response_model=schemas.ListOfUsersEmail)
+@router.patch(
+    "/{user_id}",
+    response_model=schemas.ListOfUsersEmail,
+    summary="Update an user",
+    responses={404: {"model": schemas.Error404}, 405: {"model": schemas.Error405}},
+)
 def patch_user(
     data: schemas.UserPatchBody,
-    user_id: UUID = Path(title="User UUID to update"),
+    user_id: UUID = Path(description="The id of the user to update"),
     db: Session = Depends(get_db),
     current_user: schemas.UserResponsePassword = Depends(get_current_user),
 ):
@@ -104,9 +113,15 @@ def patch_user(
     return {"users": [response]}
 
 
-@router.delete("/{user_id}", response_model=schemas.ListOfUsers)
+@router.delete(
+    "/{user_id}",
+    response_model=schemas.ListOfUsers,
+    summary="Delete an user",
+    description="The deletion is 'soft', it only adds a deleted_at and deleted_by to the User",
+    responses={404: {"model": schemas.Error404}, 405: {"model": schemas.Error405}},
+)
 def delete_user(
-    user_id: UUID = Path(title="The id of the user to delete"),
+    user_id: UUID = Path(description="The id of the user to delete"),
     db: Session = Depends(get_db),
     current_user: schemas.UserResponsePassword = Depends(get_current_user),
 ):

@@ -99,7 +99,6 @@ class BrandSocialsPostBody(BaseModel):
     class Config:
         schema_extra = {
             "example": {
-                "brand_id": "95ee9efd-bec2-4e7a-8ac8-3be2a6c2e1cb",
                 "social_id": "dd57c7fd-a92f-42f1-891d-988803e4a878",
                 "address": "www.website.com",
             }
@@ -366,3 +365,36 @@ class TokenSchema(BaseModel):
 class TokenPayload(BaseModel):
     sub: str = ""
     exp: int = 0
+
+
+class Error400(BaseModel):
+    detail: str
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "detail": "Bad request, data already exists",
+            }
+        }
+
+
+class Error404(BaseModel):
+    detail: str
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "detail": "Item not found",
+            }
+        }
+
+
+class Error405(BaseModel):
+    detail: str
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "detail": "Not authenticated",
+            }
+        }
