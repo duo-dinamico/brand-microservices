@@ -188,7 +188,7 @@ class BrandsPostBody(BaseModel):
     name: StrictStr = Field(...)
     category_id: UUID = Field(...)
     description: Optional[StrictStr] = Field(default=None)
-    average_price: Optional[StrictStr] = Field(default=None)
+    average_price: Optional[AveragePrice] = Field(default=None)
     line_address_1: Optional[StrictStr] = Field(default=None)
     line_address_2: Optional[StrictStr] = Field(default=None)
     city: Optional[StrictStr] = Field(default=None)
@@ -222,7 +222,7 @@ class BrandsPatchBody(BaseModel):
     name: Optional[StrictStr]
     category_id: Optional[UUID]
     description: Optional[StrictStr]
-    average_price: Optional[StrictStr]
+    average_price: Optional[AveragePrice]
     line_address_1: Optional[StrictStr]
     line_address_2: Optional[StrictStr]
     city: Optional[StrictStr]

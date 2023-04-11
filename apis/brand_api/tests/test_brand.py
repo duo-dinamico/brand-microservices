@@ -25,7 +25,7 @@ def test_success_brand_creation(db_session, token_generator, create_valid_catego
             "name": "validBrandName",
             "category_id": str(category_id),
             "description": "Desc",
-            "average_price": "medium",
+            "average_price": 2,
         },
     )
     assert response.status_code == 201
@@ -40,7 +40,7 @@ def test_success_brand_creation_with_location(db_session, token_generator, creat
     post_body = {
         "name": "validBrandName",
         "category_id": str(category_id),
-        "average_price": "medium",
+        "average_price": 2,
         "line_address_1": "22 Rua no sitio",
         "line_address_2": "Mais informacao",
         "city": "Porto",
@@ -291,7 +291,7 @@ def test_error_create_brand_category_must_exist(db_session, token_generator, cre
             "name": "validBrandName",
             "category_id": str(random_category_id),
             "description": "Desc",
-            "average_price": "medium",
+            "average_price": 2,
         },
     )
     assert response.status_code == 404
@@ -432,7 +432,7 @@ def test_error_brand_creation_incorrect_type_line_address(db_session, token_gene
         json={
             "name": "validBrandName",
             "category_id": str(category_id),
-            "average_price": "medium",
+            "average_price": 2,
             "line_address_1": 22,
         },
     )
@@ -449,7 +449,7 @@ def test_error_brand_creation_incorrect_postal_code(db_session, token_generator,
         json={
             "name": "validBrandName",
             "category_id": str(category_id),
-            "average_price": "medium",
+            "average_price": 2,
             "postal_code": "45685-231",
         },
     )
