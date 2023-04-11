@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Path, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from sqlalchemy.orm import Session
 
 from .. import schemas
@@ -33,30 +33,31 @@ def get_db():
     response_model=schemas.ListOfBrandSocials,
     summary="Post social adresses to a brand",
     status_code=201,
+    responses={404: {"model": schemas.Error404}, 405: {"model": schemas.Error405}},
 )
 def post_brand_social(
     data: schemas.BrandSocialsPostBody,
-    brand_id: UUID = Path(title="The UUID of the brand add socials to"),
+    brand_id: UUID = Path(description="The UUID of the brand add socials to"),
     db: Session = Depends(get_db),
     current_user: schemas.UserResponsePassword = Depends(get_current_user),
 ):
     # Path check
     brand = read_brand(db, param={"id": brand_id})
     if brand is None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Brand not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Brand not found")
     # Body check
     social = read_social(db, param={"id": data.social_id})
     if social is None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Social network not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Social network not found")
     return {"socials": [create_brand_social(db, data, brand_id, current_user.id)]}
 
 
 @router.get("/", response_model=schemas.ListOfBrandSocials, summary="List all socials pertaining to a brand")
 def get_all_brand_socials(
-    skip: int = 0,
-    limit: int = 100,
-    show_deleted: bool = False,
-    brand_id: UUID = Path(title="The UUID of the brand add socials to"),
+    skip: int = Query(default=0, description="Amount to offset the start of the query"),
+    limit: int = Query(default=100, description="How many results to obtain per query"),
+    show_deleted: bool = Query(default=False, description="Include deleted elements in the query"),
+    brand_id: UUID = Path(description="The id of the brand add socials to"),
     db: Session = Depends(get_db),
 ):
     return {"socials": read_all_brand_socials(db, brand_id, skip=skip, limit=limit, show_deleted=show_deleted)}
@@ -65,8 +66,8 @@ def get_all_brand_socials(
 @router.patch("/{brand_social_id}", response_model=schemas.ListOfBrandSocials, summary="Update the social of a brand")
 def patch_brand_socials(
     data: schemas.BrandSocialsPatchBody,
-    brand_id: UUID = Path(title="The id of the brand to update it's social"),
-    brand_social_id: UUID = Path(title="The id of the brand's social"),
+    brand_id: UUID = Path(description="The id of the brand to update it's social"),
+    brand_social_id: UUID = Path(description="The id of the brand's social"),
     db: Session = Depends(get_db),
     current_user: schemas.UserResponsePassword = Depends(get_current_user),
 ):
@@ -92,10 +93,16 @@ def patch_brand_socials(
     return {"socials": [update_brand_socials(db, brand_socials)]}
 
 
-@router.delete("/{brand_social_id}", response_model=schemas.ListOfBrandSocials, summary="Delete a social from a brand")
+@router.delete(
+    "/{brand_social_id}",
+    response_model=schemas.ListOfBrandSocials,
+    summary="Delete a social from a brand",
+    responses={400: {"model": schemas.Error400}, 404: {"model": schemas.Error404}, 405: {"model": schemas.Error405}},
+    description="The deletion is 'soft', it only adds a deleted_at and deleted_by to the Brand's social",
+)
 def delete_brand_socials(
-    brand_id: UUID = Path(title="The id of the brand to delete a social from"),
-    brand_social_id: UUID = Path(title="The id of the brand's social"),
+    brand_id: UUID = Path(description="The id of the brand to delete a social from"),
+    brand_social_id: UUID = Path(description="The id of the brand's social"),
     db: Session = Depends(get_db),
     current_user: schemas.UserResponsePassword = Depends(get_current_user),
 ):

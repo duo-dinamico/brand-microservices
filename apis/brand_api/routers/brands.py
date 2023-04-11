@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Path, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from sqlalchemy.orm import Session
 
 from .. import schemas
@@ -39,14 +39,15 @@ def get_db():
     "/",
     response_model=schemas.ListOfBrands,
     summary="Create new brand",
+    description="The average price ranges from 1 to 3. Being 1 identified as low, 2 identified as medium and 3 identified as high.",
     status_code=201,
+    responses={400: {"model": schemas.Error400}, 404: {"model": schemas.Error404}, 405: {"model": schemas.Error405}},
 )
 def post_brand(
     data: schemas.BrandsPostBody,
     db: Session = Depends(get_db),
     current_user: schemas.UserResponsePassword = Depends(get_current_user),
 ):
-    # TODO: Can we make these two only go to the DB once instead of twice?
     brand_name = read_brand(db, param={"name": data.name})
     category = read_category(db, param={"id": data.category_id})
     if category is None:
@@ -58,12 +59,12 @@ def post_brand(
 
 @router.get("/", response_model=schemas.ListOfBrands, summary="List all brands")
 def get_all_brands(
-    skip: int = 0,
-    limit: int = 100,
-    show_deleted: bool = False,
+    skip: int = Query(default=0, description="Amount to offset the start of the query"),
+    limit: int = Query(default=100, description="How many results to obtain per query"),
+    show_deleted: bool = Query(default=False, description="Include deleted elements in the query"),
     order_by: OrderBy = OrderBy.created_at,
     direction: OrderDirection = OrderDirection.asc,
-    category_id: UUID = None,
+    category_id: UUID = Query(default=None, description="The id of the category to filter by"),
     db: Session = Depends(get_db),
 ):
     return {
@@ -83,10 +84,11 @@ def get_all_brands(
     "/{brand_id}",
     response_model=schemas.ListOfBrands,
     summary="Fetch one brand by it's UUID",
+    responses={404: {"model": schemas.Error404}},
 )
 def get_one_brand(
-    brand_id: UUID = Path(title="The UUID of the brand to fetch"),
-    show_deleted: bool = False,
+    brand_id: UUID = Path(description="The UUID of the brand to fetch"),
+    show_deleted: bool = Query(default=False, description="Include deleted elements in the query"),
     db: Session = Depends(get_db),
 ):
     brand = read_brand(db, param={"id": brand_id}, show_deleted=show_deleted)
@@ -95,10 +97,16 @@ def get_one_brand(
     return {"brands": [read_brand(db, param={"id": brand_id}, show_deleted=show_deleted)]}
 
 
-@router.patch("/{brand_id}", response_model=schemas.ListOfBrands, summary="Update a brand")
+@router.patch(
+    "/{brand_id}",
+    response_model=schemas.ListOfBrands,
+    summary="Update a brand",
+    description="The average price ranges from 1 to 3. Being 1 identified as low, 2 identified as medium and 3 identified as high.",
+    responses={404: {"model": schemas.Error404}, 405: {"model": schemas.Error405}},
+)
 def patch_brand(
     data: schemas.BrandsPatchBody,
-    brand_id: UUID = Path(title="The id of the brand to update"),
+    brand_id: UUID = Path(description="The id of the brand to update"),
     db: Session = Depends(get_db),
     current_user: schemas.UserResponsePassword = Depends(get_current_user),
 ):
@@ -117,9 +125,15 @@ def patch_brand(
     return {"brands": [update_brand(db, brand)]}
 
 
-@router.delete("/{brand_id}", response_model=schemas.ListOfBrands, summary="Delete a brand")
+@router.delete(
+    "/{brand_id}",
+    response_model=schemas.ListOfBrands,
+    summary="Delete a brand",
+    responses={404: {"model": schemas.Error404}, 405: {"model": schemas.Error405}},
+    description="The deletion is 'soft', it only adds a deleted_at and deleted_by to the Brand",
+)
 def delete_brand(
-    brand_id: UUID = Path(title="The id of the brand to delete"),
+    brand_id: UUID = Path(description="The id of the brand to delete"),
     db: Session = Depends(get_db),
     current_user: schemas.UserResponsePassword = Depends(get_current_user),
 ):

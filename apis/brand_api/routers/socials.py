@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from .. import schemas
@@ -41,5 +41,9 @@ def post_social(
     response_model=schemas.ListOfSocials,
     summary="Get all available social networks",
 )
-def get_all_socials(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def get_all_socials(
+    skip: int = Query(default=0, description="Amount to offset the start of the query"),
+    limit: int = Query(default=100, description="How many results to obtain per query"),
+    db: Session = Depends(get_db),
+):
     return {"socials": read_all_socials(db, skip=skip, limit=limit)}
