@@ -127,7 +127,6 @@ def post_user(data: schemas.UserPostBody, db: Session = Depends(get_db)):
     summary="Create access and refresh tokens for user",
     response_model=schemas.TokenSchema,
     tags=["Users"],
-    include_in_schema=False,
 )
 def post_login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = read_user(db, param={"username": form_data.username})
