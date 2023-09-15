@@ -55,14 +55,9 @@ def validation_exception_handler(request, exc):
 
     return JSONResponse(response, status_code=422)
 
-origins = [
-    "http://127.0.0.1:5173",
-    "http://localhost:5173",
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -131,6 +126,7 @@ def post_user(data: schemas.UserPostBody, db: Session = Depends(get_db)):
     summary="Create access and refresh tokens for user",
     response_model=schemas.TokenSchema,
     tags=["Users"],
+    include_in_schema=False,
 )
 def post_login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = read_user(db, param={"username": form_data.username})
